@@ -33,6 +33,12 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Ignore ZIP files
+**/*.zip
+
+# Gitignore
+# Python
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
