@@ -18,14 +18,14 @@ variable "tags" {
 
 // aws_s3_bucket_intelligent_tiering_configuration
 variable "intelligent_tiering_configuration" {
-  default = object({
+  default = {
     archive_access = {
       days = 125
     }
     deep_archive_access = {
       days = 180
     }
-  })
+  }
   sensitive = false
   type = object({
     archive_access = object({
