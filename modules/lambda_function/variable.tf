@@ -1,3 +1,4 @@
+// aws_lambda_function
 variable "architectures" {
   default   = null
   sensitive = false
@@ -38,18 +39,6 @@ variable "ephemeral_storage" {
   })
 }
 
-variable "event_invoke_destination_config" {
-  default   = null
-  sensitive = false
-  type = object({
-    on_failure = object({
-      destination_arn = string
-    })
-    on_success = object({
-      destination_arn = string
-    })
-  })
-}
 
 variable "file_system_config" {
   default   = null
@@ -65,7 +54,6 @@ variable "filename" {
   sensitive = false
   type      = string
 }
-
 
 variable "function_name" {
   sensitive = false
@@ -212,4 +200,69 @@ variable "vpc_config" {
     security_group_ids = list(string)
     subnet_ids         = list(string)
   })
+}
+
+
+// aws_lambda_function_event_invoke_config
+variable "event_invoke_destination_config" {
+  default   = null
+  sensitive = false
+  type = object({
+    on_failure = object({
+      destination_arn = string
+    })
+    on_success = object({
+      destination_arn = string
+    })
+  })
+}
+
+// aws_lambda_permission
+variable "permission_action" {
+  default   = null
+  sensitive = false
+  type      = string
+}
+
+variable "permission_event_source_token" {
+  default   = null
+  sensitive = false
+  type      = string
+}
+
+variable "permission_function_url_auth_type" {
+  default   = null
+  sensitive = false
+  type      = string
+}
+
+variable "permission_principal" {
+  default   = null
+  sensitive = false
+  type      = string
+}
+
+variable "permission_principal_org_id" {
+  default   = null
+  sensitive = false
+  type      = string
+}
+
+variable "permission_source_account" {
+  default   = null
+  sensitive = false
+  type      = string
+}
+
+variable "permission_statement_id" {
+  default   = null
+  sensitive = false
+  type      = string
+}
+
+// aws_lambda_provisioned_concurrency_config
+variable "provisioned_concurrent_executions" {
+  default   = null
+  sensitive = false
+  type      = number
 }
