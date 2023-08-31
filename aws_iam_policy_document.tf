@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "s3_bucket_notification_s3_object_images_uploaded" {
+data "aws_iam_policy_document" "s3_bucket_notification_s3_object_created_images_uploaded" {
   statement {
     actions = [
       "SNS:Publish"
@@ -11,7 +11,7 @@ data "aws_iam_policy_document" "s3_bucket_notification_s3_object_images_uploaded
       type = "Service"
     }
     resources = [
-      aws_sns_topic.s3_object_images_uploaded.arn
+      aws_sns_topic.s3_object_created_images_uploaded.arn
     ]
   }
 }
