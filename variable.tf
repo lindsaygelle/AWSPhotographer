@@ -1,5 +1,5 @@
 variable "application" {
-  default   = "photographer"
+  default   = "Photographer"
   sensitive = false
   type      = string
 }
