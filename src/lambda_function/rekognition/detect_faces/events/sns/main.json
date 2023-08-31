@@ -1,0 +1,22 @@
+{
+    "Records": [
+        {
+            "EventSource": "aws:sns",
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:us-east-1:012345678901:photographer-object-created-images-uploaded:b476ec83-5a7f-4fa0-b21e-bf2890cd1b2e",
+            "Sns": {
+                "Type": "Notification",
+                "MessageId": "c4480046-1746-5489-8177-5d2c7f5dba6e",
+                "TopicArn": "arn:aws:sns:us-east-1:012345678901:photographer-object-created-images-uploaded",
+                "Subject": "Amazon S3 Notification",
+                "Message": "{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"us-east-1\",\"eventTime\":\"2023-08-31T10: 05: 14.257Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"A2Q5IQ3V81AEM3\"},\"requestParameters\":{\"sourceIPAddress\":\"114.74.191.95\"},\"responseElements\":{\"x-amz-request-id\":\"1WK03JG94C7G8STH\",\"x-amz-id-2\":\"JVrM7W1j5nBBYLmO0KwcQBnk+9kV6muBQ2C2dqA2JpgTZJKN/+/EXg42dzTXdDgPUEUZCPtxQfvpZxlqqUMzOoPPdh4/TncI\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"tf-s3-topic-20230831073307516000000001\",\"bucket\":{\"name\":\"012345678901-photographer\",\"ownerIdentity\":{\"principalId\":\"A2Q5IQ3V81AEM3\"},\"arn\":\"arn:aws:s3: : : 012345678901-photographer\"},\"object\":{\"key\":\"images/uploaded/All_About_Street_Fighter_III_The_Characters_0013.jpg\",\"size\":411356,\"eTag\":\"eebc39c5f20263fbc3d228a1568079ac\",\"sequencer\":\"0064F065DA201D4D74\"}}}]}",
+                "Timestamp": "2023-08-31T10:05:15.293Z",
+                "SignatureVersion": "1",
+                "Signature": "LOKSp0Gs1QVisLyZOHPwj1esUPhRrPP2Iyw1CajAQoROIBKsybzSODlD0Zh4F0fnMN7/mF8OOfGo2yxFdv1pRZFpaYiyBsAPW/ZaBDdkbSv8FJu5Ewc8kDqwRMJX7n52pwi1TrmxHHKlzRBiEiu/4P8rb00jQ4e46Q77I+mmInYMDCIm3i9BvAdodIedfxIGTnM/9IrGbTED1INj7XH32hlAO9fmvRGorMrP8IGQd2vgP5VPOWar/ZsBCHmTthawWmu9vevQTQilAEaFT27cGYegdQENTa5XVxdqEKr98SvDBuzdwx81jlY3unmKA4UgfFoPompZok3xccpJqkfLyg==",
+                "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-01d088a6f77103d0fe307c0069e40ed6.pem",
+                "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:012345678901:photographer-object-created-images-uploaded:b476ec83-5a7f-4fa0-b21e-bf2890cd1b2e",
+                "MessageAttributes": {}
+            }
+        }
+    ]
+}
