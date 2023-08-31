@@ -28,6 +28,12 @@ resource "aws_s3_object" "images_uploaded" {
   key          = "images/uploaded/"
 }
 
+resource "aws_s3_object" "inventory" {
+  bucket       = aws_s3_bucket.main.id
+  content_type = "application/x-directory"
+  key          = "inventory/"
+}
+
 resource "aws_s3_object" "logs" {
   bucket       = aws_s3_bucket.main.id
   content_type = "application/x-directory"
