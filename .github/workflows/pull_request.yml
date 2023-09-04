@@ -24,6 +24,7 @@ jobs:
           go-version: 1.21.0
       - run: |
           make test
+        working-directory: ${{ matrix.lambda_functions }}
 
   lint:
     defaults:
