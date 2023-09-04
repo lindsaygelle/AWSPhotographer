@@ -4,6 +4,6 @@ services:
     build:
       context: .
       dockerfile: "Dockerfile"
-    container_name: "AWSPhotographerRekognitionDetectFaces"
+    container_name: "RekognitionDetectFaces"
     ports:
       - "9000:8080"
