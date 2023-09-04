@@ -7,17 +7,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  main:
+  lambda_functions:
     defaults:
       run:
         shell: "bash"
     permissions:
       contents: "read"
-    runs-on: "${{ matrix.os }}"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - "ubuntu-latest"
+        lambda_functions:
+          - "./src/lambda_function/rekognition/detect_faces"
     steps:
       - uses: "actions/checkout@v3"
+      - run: go test main.go
+        working-directory: "${{ matrix.lambda_functions }}"
