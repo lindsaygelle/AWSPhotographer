@@ -28,5 +28,5 @@ jobs:
         working-directory: "${{ matrix.lambda_functions }}"
       - run: go build
         working-directory: "${{ matrix.lambda_functions }}"
-      - run: go test main.go
+      - run: go test ./...
         working-directory: "${{ matrix.lambda_functions }}"
