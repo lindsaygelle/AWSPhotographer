@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lambda_functions:
+        working_directory:
           - "./src/lambda_function/rekognition/detect_faces"
     steps:
       - uses: "actions/checkout@v3"
@@ -25,8 +25,36 @@ jobs:
         with:
           go-version: "1.21.0"
       - run: go get
-        working-directory: "${{ matrix.lambda_functions }}"
+        working-directory: "${{ matrix.working_directory }}"
       - run: go build
-        working-directory: "${{ matrix.lambda_functions }}"
+        working-directory: "${{ matrix.working_directory }}"
       - run: go test ./...
-        working-directory: "${{ matrix.lambda_functions }}"
+        working-directory: "${{ matrix.working_directory }}"
+
+  lint:
+    defaults:
+      run:
+        shell: "bash"
+    permissions:
+      contents: "read"
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: "actions/checkout@v3"
+      - uses: "actions/setup-python@v4"
+      - uses: "pre-commit/action@v3.0.0"
+
+  terraform:
+    defaults:
+      run:
+        shell: "bash"
+    permissions:
+      contents: "read"
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: "actions/checkout@v3"
+      - uses: hashicorp/setup-terraform@v2
+      - run: terraform init

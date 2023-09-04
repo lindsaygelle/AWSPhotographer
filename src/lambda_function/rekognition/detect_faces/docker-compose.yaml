@@ -1,0 +1,9 @@
+version: "3"
+services:
+  function:
+    build:
+      context: .
+      dockerfile: "Dockerfile"
+    container_name: "AWSPhotographerRekognitionDetectFaces"
+    ports:
+      - "9000:8080"
