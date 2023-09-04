@@ -21,5 +21,12 @@ jobs:
           - "./src/lambda_function/rekognition/detect_faces"
     steps:
       - uses: "actions/checkout@v3"
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21.0"
+      - run: go get
+        working-directory: "${{ matrix.lambda_functions }}"
+      - run: go build
+        working-directory: "${{ matrix.lambda_functions }}"
       - run: go test main.go
         working-directory: "${{ matrix.lambda_functions }}"
