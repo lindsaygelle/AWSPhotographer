@@ -1,23 +1,64 @@
-name: "pull_request"
+name: pull_request
 
 on:
   pull_request:
-    branches:
-      - "main"
   workflow_dispatch:
 
 jobs:
-  main:
+  lambda_functions:
     defaults:
       run:
-        shell: "bash"
+        shell: bash
     permissions:
-      contents: "read"
-    runs-on: "${{ matrix.os }}"
+      contents: read
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - "ubuntu-latest"
+        lambda_functions:
+          - ./src/lambda_function/rekognition/detect_faces
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.0
+      - run: |
+          make test
+        working-directory: ${{ matrix.lambda_functions }}
+
+  lint:
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - uses: pre-commit/action@v3.0.0
+
+  terraform:
+    defaults:
+      run:
+        shell: bash
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+      - run: |
+          terraform init
+      - run: |
+          terraform fmt -check
+      - run: |
+          terraform plan -input=false

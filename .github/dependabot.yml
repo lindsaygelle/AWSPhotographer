@@ -1,16 +1,16 @@
 version: 2
 updates:
   # GitHub actions updates
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "daily"
+      interval: daily
     labels:
-      - "dependencies"
+      - dependencies
   # Terraform dependency updates
-  - package-ecosystem: "terraform"
-    directory: "/"
+  - package-ecosystem: terraform
+    directory: /
     schedule:
-      interval: "daily"
+      interval: daily
     labels:
-      - "dependencies"
+      - dependencies
