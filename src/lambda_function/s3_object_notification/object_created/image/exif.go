@@ -19,15 +19,15 @@ type ExifMetadata struct {
 	ComponentsConfiguration          *string     `json:"ComponentsConfiguration"`
 	CompressedBitsPerPixel           *string     `json:"CompressedBitsPerPixel"`
 	Compression                      interface{} `json:"Compression"`
-	Contrast                         interface{} `json:"Contrast"`
+	Contrast                         *int        `json:"Contrast"`
 	Copyright                        interface{} `json:"Copyright"`
 	CustomRendered                   interface{} `json:"CustomRendered"`
-	DateTime                         interface{} `json:"DateTime"`
-	DateTimeDigitized                interface{} `json:"DateTimeDigitized"`
-	DateTimeOriginal                 interface{} `json:"DateTimeOriginal"`
+	DateTime                         *string     `json:"DateTime"`
+	DateTimeDigitized                *string     `json:"DateTimeDigitized"`
+	DateTimeOriginal                 *string     `json:"DateTimeOriginal"`
 	DeviceSettingDescription         interface{} `json:"DeviceSettingDescription"`
-	DigitalZoomRatio                 interface{} `json:"DigitalZoomRatio"`
-	ExifIFDPointer                   interface{} `json:"ExifIFDPointer"`
+	DigitalZoomRatio                 *string     `json:"DigitalZoomRatio"`
+	ExifIFDPointer                   *int        `json:"ExifIFDPointer"`
 	ExifVersion                      interface{} `json:"ExifVersion"`
 	ExposureBiasValue                interface{} `json:"ExposureBiasValue"`
 	ExposureIndex                    interface{} `json:"ExposureIndex"`
@@ -388,7 +388,7 @@ func getExifCompression(e interface {
 
 func getExifContrast(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
+}) (*int, error) {
 	var contrast int
 	tag, err := e.Get(exif.Contrast)
 	if err != nil {
@@ -430,37 +430,46 @@ func getExifCustomRendered(e interface {
 
 func getExifDateTime(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var dateTime any
+}) (*string, error) {
+	var dateTime string
 	tag, err := e.Get(exif.DateTime)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	dateTime, err = tag.StringVal()
+	if err != nil {
+		return nil, err
+	}
 	return &dateTime, nil
 }
 
 func getExifDateTimeDigitized(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var dateTimeDigitized any
+}) (*string, error) {
+	var dateTimeDigitized string
 	tag, err := e.Get(exif.DateTimeDigitized)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	dateTimeDigitized, err = tag.StringVal()
+	if err != nil {
+		return nil, err
+	}
 	return &dateTimeDigitized, nil
 }
 
 func getExifDateTimeOriginal(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var dateTimeOriginal any
+}) (*string, error) {
+	var dateTimeOriginal string
 	tag, err := e.Get(exif.DateTimeOriginal)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	dateTimeOriginal, err = tag.StringVal()
+	if err != nil {
+		return nil, err
+	}
 	return &dateTimeOriginal, nil
 }
 
@@ -478,49 +487,52 @@ func getExifDeviceSettingDescription(e interface {
 
 func getExifDigitalZoomRatio(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var digitalZoomRatio any
+}) (*string, error) {
+	var digitalZoomRatio string
 	tag, err := e.Get(exif.DigitalZoomRatio)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	digitalZoomRatio = tag.String()
 	return &digitalZoomRatio, nil
 }
 
 func getExifExifIFDPointer(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var exifIFDPointer any
+}) (*int, error) {
+	var exifIFDPointer int
 	tag, err := e.Get(exif.ExifIFDPointer)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	exifIFDPointer, err = tag.Int(0)
+	if err != nil {
+		return nil, err
+	}
 	return &exifIFDPointer, nil
 }
 
 func getExifExifVersion(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var exifVersion any
+}) (*string, error) {
+	var exifVersion string
 	tag, err := e.Get(exif.ExifVersion)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	exifVersion = tag.String()
 	return &exifVersion, nil
 }
 
 func getExifExposureBiasValue(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var exposureBiasValue any
+}) (*string, error) {
+	var exposureBiasValue string
 	tag, err := e.Get(exif.ExposureBiasValue)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	exposureBiasValue = tag.String()
 	return &exposureBiasValue, nil
 }
 
@@ -538,13 +550,16 @@ func getExifExposureIndex(e interface {
 
 func getExifExposureMode(e interface {
 	Get(exif.FieldName) (*tiff.Tag, error)
-}) (any, error) {
-	var exposureMode any
+}) (*int, error) {
+	var exposureMode int
 	tag, err := e.Get(exif.ExposureMode)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Sprintf("%v", tag)
+	exposureMode, err = tag.Int(0)
+	if err != nil {
+		return nil, err
+	}
 	return &exposureMode, nil
 }
 
@@ -1725,7 +1740,7 @@ func getExifYResolution(e interface {
 }
 
 func logSetExifMetadataError(fieldName exif.FieldName, err error) {
-	log.Printf("ExifMetadata.%s: Error=%s", fieldName, err)
+	// log.Printf("ExifMetadata.%s: Error=%s", fieldName, err)
 }
 
 func setExifMetadataApertureValue(exifMetadata *ExifMetadata, e interface {
