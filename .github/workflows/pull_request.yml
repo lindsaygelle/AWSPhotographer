@@ -9,29 +9,22 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      DIRECTORY_SRC: "./src"
-      DIRECTORY_LAMBDA: $DIRECTORY_SRC/lambda_function
-      DIRECTORY_REKOGNITION: $DIRECTORY_LAMBDA/rekognition
     permissions:
       contents: read
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        working_directory:
-          - $DIRECTORY_REKOGNITION/detect_faces
+        lambda_functions:
+          - ./src/lambda_function/s3_object_notification/object_created/image
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version: 1.21.0
-      - run: go get
-        working-directory: ${{ matrix.working_directory }}
-      - run: go build
-        working-directory: ${{ matrix.working_directory }}
-      - run: go test ./...
-        working-directory: ${{ matrix.working_directory }}
+      - run: |
+          make test
+        working-directory: ${{ matrix.lambda_functions }}
 
   lint:
     defaults:
@@ -43,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
       - uses: pre-commit/action@v3.0.0
 
@@ -51,14 +44,21 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
     permissions:
       contents: read
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v2
-      - run: terraform init
-      - run: terraform fmt -check
-      - run: terraform plan -input=false
+      - run: |
+          terraform init
+      - run: |
+          terraform fmt -check
+      - run: |
+          terraform plan -input=false
