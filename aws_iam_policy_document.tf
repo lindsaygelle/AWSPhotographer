@@ -30,3 +30,27 @@ data "aws_iam_policy_document" "s3_bucket_notification_s3_object_created_images_
     ]
   }
 }
+
+data "aws_iam_policy_document" "s3_object_read_only_access" {
+  statement {
+    actions = [
+      "s3:GetObject"
+    ]
+    effect = "Allow"
+    resources = [
+      "${aws_s3_bucket.main.arn}/*"
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "s3_object_write_only_access" {
+  statement {
+    actions = [
+      "s3:PutObject"
+    ]
+    effect = "Allow"
+    resources = [
+      "${aws_s3_bucket.main.arn}/*"
+    ]
+  }
+}
