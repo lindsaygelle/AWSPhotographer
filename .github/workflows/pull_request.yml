@@ -23,7 +23,7 @@ jobs:
         with:
           go-version: 1.21.0
       - run: |
-          make test
+          go test ./... -v
         working-directory: ${{ matrix.lambda_functions }}
 
   lint:
