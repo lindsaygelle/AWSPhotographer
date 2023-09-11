@@ -8,12 +8,12 @@ resource "aws_iam_role_policy_attachment" "lambda_s3_bucket_notification_lambda_
   role       = aws_iam_role.lambda_s3_bucket_notification.id
 }
 
-resource "aws_iam_policy_attachment" "lambda_s3_bucket_notification_s3_object_read_only_access" {
+resource "aws_iam_role_policy_attachment" "lambda_s3_bucket_notification_s3_object_read_only_access" {
   policy_arn = aws_iam_policy.s3_object_read_only_access.arn
   role       = aws_iam_role.lambda_s3_bucket_notification.id
 }
 
-resource "aws_iam_policy_attachment" "lambda_s3_bucket_notification_s3_object_write_only_access" {
+resource "aws_iam_role_policy_attachment" "lambda_s3_bucket_notification_s3_object_write_only_access" {
   policy_arn = aws_iam_policy.s3_object_write_only_access.arn
   role       = aws_iam_role.lambda_s3_bucket_notification.id
 }
