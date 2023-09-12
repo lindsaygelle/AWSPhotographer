@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
+	"image"
+	"image/jpeg"
 	"log"
 	"os"
 	"path"
@@ -17,72 +18,67 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-type S3DownloadManager interface {
-	Download(io.WriterAt, *s3.GetObjectInput, ...func(*s3manager.Downloader)) (int64, error)
-}
-
-type S3UploadManager interface {
-	PutObject(*s3.PutObjectInput) (*s3.PutObjectOutput, error)
-}
-
-// getS3ObjectExifMetadata downloads a file from an S3 bucket and extracts its exif metadata.
-func getS3ObjectExifMetadata(session *session.Session, bucket *events.S3Bucket, object *events.S3Object) {
-	if !strings.HasPrefix(object.Key, s3BucketFolderImagesUploaded) {
-		log.Fatalf("%s does not begin with %s", object.Key, s3BucketFolderImagesUploaded)
-	}
-	filePath, err := getS3Object(s3manager.NewDownloader(session), fileDirectory, path.Base(object.Key), bucket.Name, object.Key)
+// getS3Object downloads a file from the provided S3 bucket using the AWS S3 Downloader.
+// It saves the file with the given fileName and returns any error encountered.
+func getS3Object(s3DownloadManager *s3manager.Downloader, s3BucketName string, s3ObjectKey string, fileName string) error {
+	file, err := os.Create(fileName)
 	if err != nil {
-		log.Fatalln(err)
-	}
-	file, err := os.Open(*filePath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	exifMetadata := getExif(file)
-	b, err := json.Marshal(&exifMetadata)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fileName := strings.Split(path.Base(*filePath), ".")[0]
-	s3PutObjectOutput, err := putS3Object(s3.New(session), bucket.Name, fmt.Sprintf("%s/%s.json", s3BucketFolderImagesExif, fileName), &b)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	processS3PutObjectOutput(s3PutObjectOutput)
-}
-
-// getS3Object downloads a file from the provided S3 bucket.
-func getS3Object(s3DownloadManager S3DownloadManager, fileDirectory string, fileName string, bucketName string, bucketObjectKey string) (*string, error) {
-	file, err := os.Create(fmt.Sprintf("%s/%s", fileDirectory, fileName))
-	if err != nil {
-		return nil, err
+		return err
 	}
 	defer file.Close()
 	getObjectInput := s3.GetObjectInput{
-		Bucket: &bucketName,
-		Key:    &bucketObjectKey}
+		Bucket: &s3BucketName,
+		Key:    &s3ObjectKey}
 	_, err = s3DownloadManager.Download(file, &getObjectInput)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// putS3ObjectExifMetadata uploads Exif metadata to the specified S3 bucket.
+// It serializes the ExifMetadata to JSON and stores it in the S3 object.
+// Returns the S3 PutObjectOutput and any error encountered.
+func putS3ObjectExifMetadata(s3Client *s3.S3, s3BucketName string, s3ObjectKey string, exifMetadata *ExifMetadata) (*s3.PutObjectOutput, error) {
+	b, err := json.Marshal(exifMetadata)
 	if err != nil {
 		return nil, err
 	}
-	filePath := file.Name()
-	return &filePath, nil
-}
-
-// putS3Object uploads a file (or at least its contents) to the provided S3 bucket.
-func putS3Object(s3UploadManager S3UploadManager, bucketName string, bucketObjectKey string, b *[]byte) (*s3.PutObjectOutput, error) {
 	s3PutObjectInput := s3.PutObjectInput{
-		Bucket: &bucketName,
-		Body:   aws.ReadSeekCloser(bytes.NewReader(*b)),
-		Key:    &bucketObjectKey}
-	s3PutObjectOutput, err := s3UploadManager.PutObject(&s3PutObjectInput)
+		Bucket:        &s3BucketName,
+		Body:          aws.ReadSeekCloser(bytes.NewReader(b)),
+		ContentLength: aws.Int64(int64(len(b))),
+		ContentType:   aws.String("json"),
+		Key:           &s3ObjectKey}
+	s3PutObjectOutput, err := s3Client.PutObject(&s3PutObjectInput)
 	if err != nil {
 		return nil, err
 	}
 	return s3PutObjectOutput, err
 }
 
-// processS3PutObjectOutput process an s3.PutObjectOutput.
+// putS3ObjectImageJpg uploads an image in JPEG format to the specified S3 bucket.
+// Returns the S3 PutObjectOutput and any error encountered.
+func putS3ObjectImageJpg(s3Client *s3.S3, s3BucketName string, s3ObjectKey string, sourceImage image.Image) (*s3.PutObjectOutput, error) {
+	var buffer bytes.Buffer
+	err := jpeg.Encode(&buffer, sourceImage, nil)
+	if err != nil {
+		return nil, err
+	}
+	s3PutObjectInput := s3.PutObjectInput{
+		Body:          bytes.NewReader(buffer.Bytes()),
+		Bucket:        &s3BucketName,
+		ContentLength: aws.Int64(int64(len(buffer.Bytes()))),
+		ContentType:   aws.String("image/jpeg"),
+		Key:           &s3ObjectKey}
+	s3PutObjectOutput, err := s3Client.PutObject(&s3PutObjectInput)
+	if err != nil {
+		return nil, err
+	}
+	return s3PutObjectOutput, err
+}
+
+// processS3PutObjectOutput processes the output of an S3 PutObject operation.
 func processS3PutObjectOutput(s3PutObjectOutput *s3.PutObjectOutput) {
 	log.Printf("S3PutObjectOutput: BucketKeyEnabled=%v ChecksumCRC32=%v ChecksumCRC32C=%v ChecksumSHA1=%v ChecksumSHA256=%v ETag=%v Expiration=%v RequestCharged=%v SSECustomerAlgorithm=%v SSECustomerKeyMD5=%v SSEKMSEncryptionContext=%v SSEKMSKeyId=%v ServerSideEncryption=%v VersionId=%v",
 		s3PutObjectOutput.BucketKeyEnabled,
@@ -101,51 +97,88 @@ func processS3PutObjectOutput(s3PutObjectOutput *s3.PutObjectOutput) {
 		s3PutObjectOutput.VersionId)
 }
 
-// processS3Bucket processes an events.S3Bucket.
-func processS3Bucket(bucket *events.S3Bucket) {
+// processS3Bucket processes an AWS S3 bucket event.
+func processS3Bucket(session *session.Session, s3Bucket *events.S3Bucket) {
 	log.Printf("S3Bucket: Arn=%s Name=%s OwnerIdentity.PrincipalID=%s",
-		bucket.Arn,
-		bucket.Name,
-		bucket.OwnerIdentity.PrincipalID)
+		s3Bucket.Arn,
+		s3Bucket.Name,
+		s3Bucket.OwnerIdentity.PrincipalID)
 }
 
-// processS3Event process an events.S3Event.
-func processS3Event(session *session.Session, event *events.S3Event) {
-	log.Printf("S3Event: Records=%d", len(event.Records))
-	for _, eventRecord := range event.Records {
-		log.Printf("S3EventRecord: Index=%d", len(event.Records))
-		processS3EventRecord(session, &eventRecord)
+// processS3Event processes an AWS S3 event.
+func processS3Event(session *session.Session, s3Event *events.S3Event) {
+	log.Printf("S3Event: Records=%d", len(s3Event.Records))
+	for index, s3EventRecord := range s3Event.Records {
+		log.Printf("S3EventRecord: Index=%d", index)
+		processS3EventRecord(session, &s3EventRecord)
 	}
 }
 
-// processS3EventRecord processes an events.S3EventRecord.
-func processS3EventRecord(session *session.Session, eventRecord *events.S3EventRecord) {
+// processS3EventRecord processes an AWS S3 event record.
+func processS3EventRecord(session *session.Session, s3EventRecord *events.S3EventRecord) {
 	log.Printf("S3EventRecord: AWSRegion=%s EventTime=%s EventName=%s EventSource=%s EventVersion=%s",
-		eventRecord.AWSRegion,
-		eventRecord.EventTime,
-		eventRecord.EventName,
-		eventRecord.EventSource,
-		eventRecord.EventVersion)
-	processS3Entity(session, &eventRecord.S3)
+		s3EventRecord.AWSRegion,
+		s3EventRecord.EventTime,
+		s3EventRecord.EventName,
+		s3EventRecord.EventSource,
+		s3EventRecord.EventVersion)
+	processS3Entity(session, &s3EventRecord.S3)
 }
 
-// processS3Entity process an events.S3Entity.
-func processS3Entity(session *session.Session, entity *events.S3Entity) {
+// processS3Entity processes an AWS S3 entity.
+func processS3Entity(session *session.Session, s3Entity *events.S3Entity) {
 	log.Printf("S3Entity: ConfigurationID=%s SchemaVersion=%s",
-		entity.ConfigurationID,
-		entity.SchemaVersion)
-	processS3Bucket(&entity.Bucket)
-	processS3Object(&entity.Object)
-	getS3ObjectExifMetadata(session, &entity.Bucket, &entity.Object)
+		s3Entity.ConfigurationID,
+		s3Entity.SchemaVersion)
+	processS3Bucket(session, &s3Entity.Bucket)
+	processS3Object(session, s3Entity.Bucket.Name, &s3Entity.Object)
 }
 
-// processS3Object processes an events.S3Object.
-func processS3Object(object *events.S3Object) {
-	log.Printf("S3Object: ETag=%s Key=%s Sequencer=%s Size=%d URLDecodeKey=%s VersionID=%s",
-		object.ETag,
-		object.Key,
-		object.Sequencer,
-		object.Size,
-		object.URLDecodedKey,
-		object.VersionID)
+// processS3Object processes an AWS S3 object event.
+func processS3Object(session *session.Session, s3BucketName string, s3Object *events.S3Object) {
+	log.Printf("S3Object: Bucket=%s ETag=%s Key=%s Sequencer=%s Size=%d URLDecodeKey=%s VersionID=%s",
+		s3BucketName,
+		s3Object.ETag,
+		s3Object.Key,
+		s3Object.Sequencer,
+		s3Object.Size,
+		s3Object.URLDecodedKey,
+		s3Object.VersionID)
+	fileName := fmt.Sprintf("%s/%s", fileDirectory, path.Base(s3Object.Key))
+	err := getS3Object(s3manager.NewDownloader(session), s3BucketName, s3Object.Key, fileName)
+	if err != nil {
+		log.Fatalf("S3Object: Bucket=%s Key=%s FileName=%s Error=%s", s3BucketName, s3Object.Key, fileName, err)
+	}
+	s3Client := s3.New(session)
+	processS3ObjectExifMetadata(session, s3Client, s3BucketName, fileName)
+	processS3ObjectImage(session, s3Client, s3BucketName, fileName)
+}
+
+// processS3ObjectExifMetadata processes Exif metadata for an AWS S3 object event.
+func processS3ObjectExifMetadata(session *session.Session, s3Client *s3.S3, s3BucketName string, fileName string) {
+	exifMetadata, err := openExif(fileName)
+	if err != nil {
+		log.Fatalf("ExifMetadata: Error=%s", err)
+	}
+	fileName = strings.Split(path.Base(fileName), ".")[0]
+	s3ObjectKey := fmt.Sprintf("%s/%s.JSON", s3BucketFolderImagesExif, fileName)
+	s3PutObjectOutput, err := putS3ObjectExifMetadata(s3Client, s3BucketName, s3ObjectKey, exifMetadata)
+	if err != nil {
+		log.Fatalf("ExifMetadata: Error=%s", err)
+	}
+	processS3PutObjectOutput(s3PutObjectOutput)
+}
+
+// processS3ObjectImage processes an image for an AWS S3 object event.
+func processS3ObjectImage(session *session.Session, s3Client *s3.S3, s3BucketName string, fileName string) {
+	image, err := openImage(fileName)
+	if err != nil {
+		log.Fatalf("Image: Error=%s", err)
+	}
+	s3ObjectKey := fmt.Sprintf("%s/%s.JPG", s3BucketFolderImagesCompressed, path.Base(fileName))
+	s3PutObjectOutput, err := putS3ObjectImageJpg(s3Client, s3BucketName, s3ObjectKey, image)
+	if err != nil {
+		log.Fatalf("Image: Error=%s", err)
+	}
+	processS3PutObjectOutput(s3PutObjectOutput)
 }

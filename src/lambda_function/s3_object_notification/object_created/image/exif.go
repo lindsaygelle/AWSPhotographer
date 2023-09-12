@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -167,18 +168,20 @@ type exifContainer struct {
 	*exif.Exif
 }
 
+// Get returns the ExifTag associated with the specified field name.
+// If the field name is not found or there is an error retrieving the tag, an error is returned.
 func (e *exifContainer) Get(fieldName exif.FieldName) (ExifTag, error) {
 	return e.Exif.Get(fieldName)
 }
 
 // getExif extracts Exif metadata from an io.Reader and returns an ExifMetadata object.
 // It decodes the Exif data from the input file and populates the ExifMetadata structure.
-// If an error occurs during decoding, it logs the error and returns an empty ExifMetadata.
-func getExif(file io.Reader) *ExifMetadata {
+// If an error occurs during decoding, an error is returned.
+func getExif(file io.Reader) (*ExifMetadata, error) {
 	// Decode the Exif data from the input file.
 	e, err := exif.Decode(file)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	// Create an empty ExifMetadata structure.
@@ -188,7 +191,7 @@ func getExif(file io.Reader) *ExifMetadata {
 	setExif(&exifMetadata, &exifContainer{e})
 
 	// Return the populated ExifMetadata.
-	return &exifMetadata
+	return &exifMetadata, nil
 }
 
 // getExifApertureValue retrieves the Aperture Value Exif tag from the provided Exif object.
@@ -1781,6 +1784,17 @@ func getExifYResolution(e Exif) (*string, error) {
 	return &yResolution, nil
 }
 
+// openExif opens an image file at the given filename and extracts Exif metadata.
+// It returns a pointer to ExifMetadata and any error encountered during the process.
+func openExif(filename string) (*ExifMetadata, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	return getExif(file)
+}
+
+// setExif sets various Exif metadata fields using the Exif struct and logs any encountered errors.
 func setExif(exifMetadata *ExifMetadata, e Exif) {
 	if err := setExifMetadataApertureValue(exifMetadata, e); err != nil {
 		log.Printf("ApertureValue: %s", err)
