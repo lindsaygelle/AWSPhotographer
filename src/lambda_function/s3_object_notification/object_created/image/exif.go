@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -167,18 +168,20 @@ type exifContainer struct {
 	*exif.Exif
 }
 
+// Get returns the ExifTag associated with the specified field name.
+// If the field name is not found or there is an error retrieving the tag, an error is returned.
 func (e *exifContainer) Get(fieldName exif.FieldName) (ExifTag, error) {
 	return e.Exif.Get(fieldName)
 }
 
 // getExif extracts Exif metadata from an io.Reader and returns an ExifMetadata object.
 // It decodes the Exif data from the input file and populates the ExifMetadata structure.
-// If an error occurs during decoding, it logs the error and returns an empty ExifMetadata.
-func getExif(file io.Reader) *ExifMetadata {
+// If an error occurs during decoding, an error is returned.
+func getExif(file io.Reader) (*ExifMetadata, error) {
 	// Decode the Exif data from the input file.
 	e, err := exif.Decode(file)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	// Create an empty ExifMetadata structure.
@@ -188,7 +191,7 @@ func getExif(file io.Reader) *ExifMetadata {
 	setExif(&exifMetadata, &exifContainer{e})
 
 	// Return the populated ExifMetadata.
-	return &exifMetadata
+	return &exifMetadata, nil
 }
 
 // getExifApertureValue retrieves the Aperture Value Exif tag from the provided Exif object.
@@ -763,46 +766,56 @@ func getExifGPSDestDistanceRef(e Exif) (interface{}, error) {
 	return gpsDestDistanceRef, nil
 }
 
-func getExifGPSDestLatitude(e Exif) (any, error) {
-	var gpsDestLatitude any
+// getExifGPSDestLatitude retrieves the GPS Destination Latitude Exif tag from the provided Exif object.
+// It returns the GPS Destination Latitude as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSDestLatitude(e Exif) (interface{}, error) {
+	var gpsDestLatitude interface{}
 	tag, err := e.Get(exif.GPSDestLatitude)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsDestLatitude, nil
+	return gpsDestLatitude, nil
 }
 
-func getExifGPSDestLatitudeRef(e Exif) (any, error) {
-	var gpsDestLatitudeRef any
+// getExifGPSDestLatitudeRef retrieves the GPS Destination Latitude Reference Exif tag from the provided Exif object.
+// It returns the GPS Destination Latitude Reference as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSDestLatitudeRef(e Exif) (interface{}, error) {
+	var gpsDestLatitudeRef interface{}
 	tag, err := e.Get(exif.GPSDestLatitudeRef)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsDestLatitudeRef, nil
+	return gpsDestLatitudeRef, nil
 }
 
-func getExifGPSDestLongitude(e Exif) (any, error) {
-	var gpsDestLongitude any
+// getExifGPSDestLongitude retrieves the GPS Destination Longitude Exif tag from the provided Exif object.
+// It returns the GPS Destination Longitude as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSDestLongitude(e Exif) (interface{}, error) {
+	var gpsDestLongitude interface{}
 	tag, err := e.Get(exif.GPSDestLongitude)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsDestLongitude, nil
+	return gpsDestLongitude, nil
 }
 
-func getExifGPSDestLongitudeRef(e Exif) (any, error) {
-	var gpsDestLongitudeRef any
+// getExifGPSDestLongitudeRef retrieves the GPS Destination Longitude Reference Exif tag from the provided Exif object.
+// It returns the GPS Destination Longitude Reference as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSDestLongitudeRef(e Exif) (interface{}, error) {
+	var gpsDestLongitudeRef interface{}
 	tag, err := e.Get(exif.GPSDestLongitudeRef)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsDestLongitudeRef, nil
+	return gpsDestLongitudeRef, nil
 }
 
+// getExifGPSDifferential retrieves the GPS Differential Correction Exif tag from the provided Exif object.
+// It returns the GPS Differential Correction as an *int, and an error if the tag retrieval fails.
 func getExifGPSDifferential(e Exif) (*int, error) {
 	var gpsDifferential int
 	tag, err := e.Get(exif.GPSDifferential)
@@ -816,26 +829,32 @@ func getExifGPSDifferential(e Exif) (*int, error) {
 	return &gpsDifferential, nil
 }
 
-func getExifGPSImgDirection(e Exif) (any, error) {
-	var gpsImgDirection any
+// getExifGPSImgDirection retrieves the GPS Image Direction Exif tag from the provided Exif object.
+// It returns the GPS Image Direction as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSImgDirection(e Exif) (interface{}, error) {
+	var gpsImgDirection interface{}
 	tag, err := e.Get(exif.GPSImgDirection)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsImgDirection, nil
+	return gpsImgDirection, nil
 }
 
-func getExifGPSImgDirectionRef(e Exif) (any, error) {
-	var gpsImgDirectionRef any
+// getExifGPSImgDirectionRef retrieves the GPS Image Direction Reference Exif tag from the provided Exif object.
+// It returns the GPS Image Direction Reference as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSImgDirectionRef(e Exif) (interface{}, error) {
+	var gpsImgDirectionRef interface{}
 	tag, err := e.Get(exif.GPSImgDirectionRef)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsImgDirectionRef, nil
+	return gpsImgDirectionRef, nil
 }
 
+// getExifGPSInfoIFDPointer retrieves the GPS Information IFD Pointer Exif tag from the provided Exif object.
+// It returns the GPS Information IFD Pointer as an *int, and an error if the tag retrieval fails.
 func getExifGPSInfoIFDPointer(e Exif) (*int, error) {
 	var gpsInfoIFDPointer int
 	tag, err := e.Get(exif.GPSInfoIFDPointer)
@@ -849,12 +868,15 @@ func getExifGPSInfoIFDPointer(e Exif) (*int, error) {
 	return &gpsInfoIFDPointer, nil
 }
 
+// getExifGPSLatitude retrieves the GPS Latitude Exif tag from the provided Exif object.
+// It returns the GPS Latitude as a []string, and an error if the tag retrieval or conversion fails.
 func getExifGPSLatitude(e Exif) ([]string, error) {
 	var gpsLatitude []string
 	tag, err := e.Get(exif.GPSLatitude)
 	if err != nil {
 		return nil, err
 	}
+	// Unmarshal the tag's string representation into a []string.
 	err = json.Unmarshal([]byte(tag.String()), &gpsLatitude)
 	if err != nil {
 		return nil, err
@@ -862,22 +884,28 @@ func getExifGPSLatitude(e Exif) ([]string, error) {
 	return gpsLatitude, nil
 }
 
+// getExifGPSLatitudeRef retrieves the GPS Latitude Reference Exif tag from the provided Exif object.
+// It returns the GPS Latitude Reference as a *string, and an error if the tag retrieval fails.
 func getExifGPSLatitudeRef(e Exif) (*string, error) {
 	var gpsLatitudeRef string
 	tag, err := e.Get(exif.GPSLatitudeRef)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	gpsLatitudeRef = strings.Trim(tag.String(), "\"")
 	return &gpsLatitudeRef, nil
 }
 
+// getExifGPSLongitude retrieves the GPS Longitude Exif tag from the provided Exif object.
+// It returns the GPS Longitude as a []string, and an error if the tag retrieval or conversion fails.
 func getExifGPSLongitude(e Exif) ([]string, error) {
 	var gpsLongitude []string
 	tag, err := e.Get(exif.GPSLongitude)
 	if err != nil {
 		return nil, err
 	}
+	// Unmarshal the tag's string representation into a []string.
 	err = json.Unmarshal([]byte(tag.String()), &gpsLongitude)
 	if err != nil {
 		return nil, err
@@ -885,32 +913,41 @@ func getExifGPSLongitude(e Exif) ([]string, error) {
 	return gpsLongitude, nil
 }
 
+// getExifGPSLongitudeRef retrieves the GPS Longitude Reference Exif tag from the provided Exif object.
+// It returns the GPS Longitude Reference as a *string, and an error if the tag retrieval fails.
 func getExifGPSLongitudeRef(e Exif) (*string, error) {
 	var gpsLongitudeRef string
 	tag, err := e.Get(exif.GPSLongitudeRef)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	gpsLongitudeRef = strings.Trim(tag.String(), "\"")
 	return &gpsLongitudeRef, nil
 }
 
+// getExifGPSMapDatum retrieves the GPS Map Datum Exif tag from the provided Exif object.
+// It returns the GPS Map Datum as a *string, and an error if the tag retrieval fails.
 func getExifGPSMapDatum(e Exif) (*string, error) {
 	var gpsMapDatum string
 	tag, err := e.Get(exif.GPSMapDatum)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	gpsMapDatum = strings.Trim(tag.String(), "\"")
 	return &gpsMapDatum, nil
 }
 
+// getExifGPSMeasureMode retrieves the GPS Measure Mode Exif tag from the provided Exif object.
+// It returns the GPS Measure Mode as an *int, and an error if the tag retrieval or conversion fails.
 func getExifGPSMeasureMode(e Exif) (*int, error) {
 	var gpsMeasureMode int
 	tag, err := e.Get(exif.GPSMeasureMode)
 	if err != nil {
 		return nil, err
 	}
+	// Convert the tag's string representation to an integer.
 	gpsMeasureMode, err = strconv.Atoi(strings.Trim(tag.String(), "\""))
 	if err != nil {
 		return nil, err
@@ -918,62 +955,76 @@ func getExifGPSMeasureMode(e Exif) (*int, error) {
 	return &gpsMeasureMode, nil
 }
 
-func getExifGPSProcessingMethod(e Exif) (any, error) {
-	var gpsProcessingMethod any
+// getExifGPSProcessingMethod retrieves the GPS Processing Method Exif tag from the provided Exif object.
+// It returns the GPS Processing Method as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSProcessingMethod(e Exif) (interface{}, error) {
+	var gpsProcessingMethod interface{}
 	tag, err := e.Get(exif.GPSProcessingMethod)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsProcessingMethod, nil
+	return gpsProcessingMethod, nil
 }
 
-func getExifGPSSatelites(e Exif) (any, error) {
-	var gpsSatelites any
+// getExifGPSSatelites retrieves the GPS Satellites Exif tag from the provided Exif object.
+// It returns the GPS Satellites as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSSatelites(e Exif) (interface{}, error) {
+	var gpsSatellites interface{}
 	tag, err := e.Get(exif.GPSSatelites)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsSatelites, nil
+	return gpsSatellites, nil
 }
 
-func getExifGPSSpeed(e Exif) (any, error) {
-	var gpsSpeed any
+// getExifGPSSpeed retrieves the GPS Speed Exif tag from the provided Exif object.
+// It returns the GPS Speed as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSSpeed(e Exif) (interface{}, error) {
+	var gpsSpeed interface{}
 	tag, err := e.Get(exif.GPSSpeed)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsSpeed, nil
+	return gpsSpeed, nil
 }
 
-func getExifGPSSpeedRef(e Exif) (any, error) {
-	var gpsSpeedRef any
+// getExifGPSSpeedRef retrieves the GPS Speed Reference Exif tag from the provided Exif object.
+// It returns the GPS Speed Reference as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSSpeedRef(e Exif) (interface{}, error) {
+	var gpsSpeedRef interface{}
 	tag, err := e.Get(exif.GPSSpeedRef)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsSpeedRef, nil
+	return gpsSpeedRef, nil
 }
 
+// getExifGPSStatus retrieves the GPS Status Exif tag from the provided Exif object.
+// It returns the GPS Status as a *string, and an error if the tag retrieval fails.
 func getExifGPSStatus(e Exif) (*string, error) {
 	var gpsStatus string
 	tag, err := e.Get(exif.GPSStatus)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	gpsStatus = strings.Trim(tag.String(), "\"")
 	return &gpsStatus, nil
 }
 
+// getExifGPSTimeStamp retrieves the GPS Time Stamp Exif tag from the provided Exif object.
+// It returns the GPS Time Stamp as a []string, and an error if the tag retrieval or conversion fails.
 func getExifGPSTimeStamp(e Exif) ([]string, error) {
 	var gpsTimeStamp []string
 	tag, err := e.Get(exif.GPSTimeStamp)
 	if err != nil {
 		return nil, err
 	}
+	// Unmarshal the tag's string representation into a []string.
 	err = json.Unmarshal([]byte(tag.String()), &gpsTimeStamp)
 	if err != nil {
 		return nil, err
@@ -981,16 +1032,20 @@ func getExifGPSTimeStamp(e Exif) ([]string, error) {
 	return gpsTimeStamp, nil
 }
 
-func getExifGPSTrack(e Exif) (any, error) {
-	var gpsTrack any
+// getExifGPSTrack retrieves the GPS Track Exif tag from the provided Exif object.
+// It returns the GPS Track as an interface{} type, and an error if the tag retrieval fails.
+func getExifGPSTrack(e Exif) (interface{}, error) {
+	var gpsTrack interface{}
 	tag, err := e.Get(exif.GPSTrack)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Sprintf("%v", tag)
-	return &gpsTrack, nil
+	return gpsTrack, nil
 }
 
+// getExifGPSTrackRef retrieves the GPS Track Reference Exif tag from the provided Exif object.
+// It returns the GPS Track Reference as an interface{} type, and an error if the tag retrieval fails.
 func getExifGPSTrackRef(e Exif) (any, error) {
 	var gpsTrackRef any
 	tag, err := e.Get(exif.GPSTrackRef)
@@ -1001,12 +1056,15 @@ func getExifGPSTrackRef(e Exif) (any, error) {
 	return &gpsTrackRef, nil
 }
 
+// getExifGPSVersionID retrieves the GPS Version ID Exif tag from the provided Exif object.
+// It returns the GPS Version ID as a []string, and an error if the tag retrieval or conversion fails.
 func getExifGPSVersionID(e Exif) ([]string, error) {
 	var gpsVersionID []string
 	tag, err := e.Get(exif.GPSVersionID)
 	if err != nil {
 		return nil, err
 	}
+	// Unmarshal the tag's string representation into a []string.
 	err = json.Unmarshal([]byte(tag.String()), &gpsVersionID)
 	if err != nil {
 		return nil, err
@@ -1014,8 +1072,10 @@ func getExifGPSVersionID(e Exif) ([]string, error) {
 	return gpsVersionID, nil
 }
 
-func getExifGainControl(e Exif) (any, error) {
-	var gainControl any
+// getExifGainControl retrieves the Gain Control Exif tag from the provided Exif object.
+// It returns the Gain Control as an interface{} type, and an error if the tag retrieval fails.
+func getExifGainControl(e Exif) (interface{}, error) {
+	var gainControl interface{}
 	tag, err := e.Get(exif.GainControl)
 	if err != nil {
 		return nil, err
@@ -1024,6 +1084,8 @@ func getExifGainControl(e Exif) (any, error) {
 	return &gainControl, nil
 }
 
+// getExifISOSpeedRatings retrieves the ISO Speed Ratings Exif tag from the provided Exif object.
+// It returns the ISO Speed Ratings as an *int, and an error if the tag retrieval or conversion fails.
 func getExifISOSpeedRatings(e Exif) (*int, error) {
 	var iSOSpeedRatings int
 	tag, err := e.Get(exif.ISOSpeedRatings)
@@ -1037,8 +1099,10 @@ func getExifISOSpeedRatings(e Exif) (*int, error) {
 	return &iSOSpeedRatings, nil
 }
 
-func getExifImageDescription(e Exif) (any, error) {
-	var imageDescription any
+// getExifImageDescription retrieves the Image Description Exif tag from the provided Exif object.
+// It returns the Image Description as an interface{} type, and an error if the tag retrieval fails.
+func getExifImageDescription(e Exif) (interface{}, error) {
+	var imageDescription interface{}
 	tag, err := e.Get(exif.ImageDescription)
 	if err != nil {
 		return nil, err
@@ -1047,8 +1111,10 @@ func getExifImageDescription(e Exif) (any, error) {
 	return &imageDescription, nil
 }
 
-func getExifImageLength(e Exif) (any, error) {
-	var imageLength any
+// getExifImageLength retrieves the Image Length Exif tag from the provided Exif object.
+// It returns the Image Length as an interface{} type, and an error if the tag retrieval fails.
+func getExifImageLength(e Exif) (interface{}, error) {
+	var imageLength interface{}
 	tag, err := e.Get(exif.ImageLength)
 	if err != nil {
 		return nil, err
@@ -1057,8 +1123,10 @@ func getExifImageLength(e Exif) (any, error) {
 	return &imageLength, nil
 }
 
-func getExifImageUniqueID(e Exif) (any, error) {
-	var imageUniqueID any
+// getExifImageUniqueID retrieves the Image Unique ID Exif tag from the provided Exif object.
+// It returns the Image Unique ID as an interface{} type, and an error if the tag retrieval fails.
+func getExifImageUniqueID(e Exif) (interface{}, error) {
+	var imageUniqueID interface{}
 	tag, err := e.Get(exif.ImageUniqueID)
 	if err != nil {
 		return nil, err
@@ -1067,8 +1135,10 @@ func getExifImageUniqueID(e Exif) (any, error) {
 	return &imageUniqueID, nil
 }
 
-func getExifImageWidth(e Exif) (any, error) {
-	var imageWidth any
+// getExifImageWidth retrieves the Image Width Exif tag from the provided Exif object.
+// It returns the Image Width as an interface{} type, and an error if the tag retrieval fails.
+func getExifImageWidth(e Exif) (interface{}, error) {
+	var imageWidth interface{}
 	tag, err := e.Get(exif.ImageWidth)
 	if err != nil {
 		return nil, err
@@ -1077,6 +1147,8 @@ func getExifImageWidth(e Exif) (any, error) {
 	return &imageWidth, nil
 }
 
+// getExifInteroperabilityIFDPointer retrieves the Interoperability IFD Pointer Exif tag from the provided Exif object.
+// It returns the Interoperability IFD Pointer as an *int, and an error if the tag retrieval or conversion fails.
 func getExifInteroperabilityIFDPointer(e Exif) (*int, error) {
 	var interoperabilityIFDPointer int
 	tag, err := e.Get(exif.InteroperabilityIFDPointer)
@@ -1090,18 +1162,23 @@ func getExifInteroperabilityIFDPointer(e Exif) (*int, error) {
 	return &interoperabilityIFDPointer, nil
 }
 
+// getExifInteroperabilityIndex retrieves the Interoperability Index Exif tag from the provided Exif object.
+// It returns the Interoperability Index as a *string, and an error if the tag retrieval fails.
 func getExifInteroperabilityIndex(e Exif) (*string, error) {
 	var interoperabilityIndex string
 	tag, err := e.Get(exif.InteroperabilityIndex)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	interoperabilityIndex = strings.Trim(tag.String(), "\"")
 	return &interoperabilityIndex, nil
 }
 
-func getExifLensMake(e Exif) (any, error) {
-	var lensMake any
+// getExifLensMake retrieves the Lens Make Exif tag from the provided Exif object.
+// It returns the Lens Make as an interface{} type, and an error if the tag retrieval fails.
+func getExifLensMake(e Exif) (interface{}, error) {
+	var lensMake interface{}
 	tag, err := e.Get(exif.LensMake)
 	if err != nil {
 		return nil, err
@@ -1110,16 +1187,21 @@ func getExifLensMake(e Exif) (any, error) {
 	return &lensMake, nil
 }
 
+// getExifLensModel retrieves the Lens Model Exif tag from the provided Exif object.
+// It returns the Lens Model as a *string, and an error if the tag retrieval fails.
 func getExifLensModel(e Exif) (*string, error) {
 	var lensModel string
 	tag, err := e.Get(exif.LensModel)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	lensModel = strings.Trim(tag.String(), "\"")
 	return &lensModel, nil
 }
 
+// getExifLightSource retrieves the Light Source Exif tag from the provided Exif object.
+// It returns the Light Source as an *int, and an error if the tag retrieval or conversion fails.
 func getExifLightSource(e Exif) (*int, error) {
 	var lightSource int
 	tag, err := e.Get(exif.LightSource)
@@ -1133,36 +1215,47 @@ func getExifLightSource(e Exif) (*int, error) {
 	return &lightSource, nil
 }
 
+// getExifMake retrieves the Make Exif tag from the provided Exif object.
+// It returns the Make as a *string, and an error if the tag retrieval fails.
 func getExifMake(e Exif) (*string, error) {
 	var make string
 	tag, err := e.Get(exif.Make)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	make = strings.Trim(tag.String(), "\"")
 	return &make, nil
 }
 
+// getExifMakerNote retrieves the Maker Note Exif tag from the provided Exif object.
+// It returns the Maker Note as a *string, and an error if the tag retrieval fails.
 func getExifMakerNote(e Exif) (*string, error) {
 	var makerNote string
 	tag, err := e.Get(exif.MakerNote)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	makerNote = strings.Trim(tag.String(), "\"")
 	return &makerNote, nil
 }
 
+// getExifMaxApertureValue retrieves the Max Aperture Value Exif tag from the provided Exif object.
+// It returns the Max Aperture Value as a *string, and an error if the tag retrieval fails.
 func getExifMaxApertureValue(e Exif) (*string, error) {
 	var maxApertureValue string
 	tag, err := e.Get(exif.MaxApertureValue)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	maxApertureValue = strings.Trim(tag.String(), "\"")
 	return &maxApertureValue, nil
 }
 
+// getExifMeteringMode retrieves the Metering Mode Exif tag from the provided Exif object.
+// It returns the Metering Mode as an *int, and an error if the tag retrieval or conversion fails.
 func getExifMeteringMode(e Exif) (*int, error) {
 	var meteringMode int
 	tag, err := e.Get(exif.MeteringMode)
@@ -1176,18 +1269,23 @@ func getExifMeteringMode(e Exif) (*int, error) {
 	return &meteringMode, nil
 }
 
+// getExifModel retrieves the Model Exif tag from the provided Exif object.
+// It returns the Model as a *string, and an error if the tag retrieval fails.
 func getExifModel(e Exif) (*string, error) {
 	var model string
 	tag, err := e.Get(exif.Model)
 	if err != nil {
 		return nil, err
 	}
+	// Trim surrounding quotes from the tag's string representation.
 	model = strings.Trim(tag.String(), "\"")
 	return &model, nil
 }
 
-func getExifOECF(e Exif) (any, error) {
-	var oECF any
+// getExifOECF retrieves the OECF Exif tag from the provided Exif object.
+// It returns the OECF as an interface{} type, and an error if the tag retrieval fails.
+func getExifOECF(e Exif) (interface{}, error) {
+	var oECF interface{}
 	tag, err := e.Get(exif.OECF)
 	if err != nil {
 		return nil, err
@@ -1196,6 +1294,8 @@ func getExifOECF(e Exif) (any, error) {
 	return &oECF, nil
 }
 
+// getExifOrientation retrieves the Orientation Exif tag from the provided Exif object.
+// It returns the Orientation as an *int, and an error if the tag retrieval or conversion fails.
 func getExifOrientation(e Exif) (*int, error) {
 	var orientation int
 	tag, err := e.Get(exif.Orientation)
@@ -1209,6 +1309,8 @@ func getExifOrientation(e Exif) (*int, error) {
 	return &orientation, nil
 }
 
+// getExifPhotometricInterpretation retrieves the Photometric Interpretation Exif tag from the provided Exif object.
+// It returns the Photometric Interpretation as an interface{} type, and an error if the tag retrieval fails.
 func getExifPhotometricInterpretation(e Exif) (any, error) {
 	var photometricInterpretation any
 	tag, err := e.Get(exif.PhotometricInterpretation)
@@ -1219,6 +1321,8 @@ func getExifPhotometricInterpretation(e Exif) (any, error) {
 	return &photometricInterpretation, nil
 }
 
+// getExifPixelXDimension retrieves the Pixel X Dimension Exif tag from the provided Exif object.
+// It returns the Pixel X Dimension as an *int, and an error if the tag retrieval or conversion fails.
 func getExifPixelXDimension(e Exif) (*int, error) {
 	var pixelXDimension int
 	tag, err := e.Get(exif.PixelXDimension)
@@ -1232,6 +1336,8 @@ func getExifPixelXDimension(e Exif) (*int, error) {
 	return &pixelXDimension, nil
 }
 
+// getExifPixelYDimension retrieves the Pixel Y Dimension Exif tag from the provided Exif object.
+// It returns the Pixel Y Dimension as an *int, and an error if the tag retrieval or conversion fails.
 func getExifPixelYDimension(e Exif) (*int, error) {
 	var pixelYDimension int
 	tag, err := e.Get(exif.PixelYDimension)
@@ -1245,8 +1351,10 @@ func getExifPixelYDimension(e Exif) (*int, error) {
 	return &pixelYDimension, nil
 }
 
-func getExifPlanarConfiguration(e Exif) (any, error) {
-	var planarConfiguration any
+// getExifPlanarConfiguration retrieves the Planar Configuration Exif tag from the provided Exif object.
+// It returns the Planar Configuration as an interface{} type, and an error if the tag retrieval fails.
+func getExifPlanarConfiguration(e Exif) (interface{}, error) {
+	var planarConfiguration interface{}
 	tag, err := e.Get(exif.PlanarConfiguration)
 	if err != nil {
 		return nil, err
@@ -1255,8 +1363,10 @@ func getExifPlanarConfiguration(e Exif) (any, error) {
 	return &planarConfiguration, nil
 }
 
-func getExifRelatedSoundFile(e Exif) (any, error) {
-	var relatedSoundFile any
+// getExifRelatedSoundFile retrieves the Related Sound File Exif tag from the provided Exif object.
+// It returns the Related Sound File as an interface{} type, and an error if the tag retrieval fails.
+func getExifRelatedSoundFile(e Exif) (interface{}, error) {
+	var relatedSoundFile interface{}
 	tag, err := e.Get(exif.RelatedSoundFile)
 	if err != nil {
 		return nil, err
@@ -1265,6 +1375,8 @@ func getExifRelatedSoundFile(e Exif) (any, error) {
 	return &relatedSoundFile, nil
 }
 
+// getExifResolutionUnit retrieves the Resolution Unit Exif tag from the provided Exif object.
+// It returns the Resolution Unit as an *int, and an error if the tag retrieval or conversion fails.
 func getExifResolutionUnit(e Exif) (*int, error) {
 	var resolutionUnit int
 	tag, err := e.Get(exif.ResolutionUnit)
@@ -1278,6 +1390,8 @@ func getExifResolutionUnit(e Exif) (*int, error) {
 	return &resolutionUnit, nil
 }
 
+// getExifSamplesPerPixel retrieves the Samples Per Pixel Exif tag from the provided Exif object.
+// It returns the Samples Per Pixel as an *int, and an error if the tag retrieval or conversion fails.
 func getExifSamplesPerPixel(e Exif) (*int, error) {
 	var samplesPerPixel int
 	tag, err := e.Get(exif.SamplesPerPixel)
@@ -1291,6 +1405,8 @@ func getExifSamplesPerPixel(e Exif) (*int, error) {
 	return &samplesPerPixel, nil
 }
 
+// getExifSaturation retrieves the Saturation Exif tag from the provided Exif object.
+// It returns the Saturation as an *int, and an error if the tag retrieval or conversion fails.
 func getExifSaturation(e Exif) (*int, error) {
 	var saturation int
 	tag, err := e.Get(exif.Saturation)
@@ -1304,6 +1420,8 @@ func getExifSaturation(e Exif) (*int, error) {
 	return &saturation, nil
 }
 
+// getExifSceneCaptureType retrieves the Scene Capture Type Exif tag from the provided Exif object.
+// It returns the Scene Capture Type as an *int, and an error if the tag retrieval or conversion fails.
 func getExifSceneCaptureType(e Exif) (*int, error) {
 	var sceneCaptureType int
 	tag, err := e.Get(exif.SceneCaptureType)
@@ -1317,6 +1435,8 @@ func getExifSceneCaptureType(e Exif) (*int, error) {
 	return &sceneCaptureType, nil
 }
 
+// getExifSceneType retrieves the Scene Type Exif tag from the provided Exif object.
+// It returns the Scene Type as an *string, and an error if the tag retrieval fails.
 func getExifSceneType(e Exif) (*string, error) {
 	var sceneType string
 	tag, err := e.Get(exif.SceneType)
@@ -1327,8 +1447,10 @@ func getExifSceneType(e Exif) (*string, error) {
 	return &sceneType, nil
 }
 
-func getExifSensingMethod(e Exif) (any, error) {
-	var sensingMethod any
+// getExifSensingMethod retrieves the Sensing Method Exif tag from the provided Exif object.
+// It returns the Sensing Method as an interface{} type, and an error if the tag retrieval fails.
+func getExifSensingMethod(e Exif) (interface{}, error) {
+	var sensingMethod interface{}
 	tag, err := e.Get(exif.SensingMethod)
 	if err != nil {
 		return nil, err
@@ -1337,6 +1459,8 @@ func getExifSensingMethod(e Exif) (any, error) {
 	return &sensingMethod, nil
 }
 
+// getExifSharpness retrieves the Sharpness Exif tag from the provided Exif object.
+// It returns the Sharpness as an *int, and an error if the tag retrieval or conversion fails.
 func getExifSharpness(e Exif) (*int, error) {
 	var sharpness int
 	tag, err := e.Get(exif.Sharpness)
@@ -1350,8 +1474,10 @@ func getExifSharpness(e Exif) (*int, error) {
 	return &sharpness, nil
 }
 
-func getExifShutterSpeedValue(e Exif) (any, error) {
-	var shutterSpeedValue any
+// getExifShutterSpeedValue retrieves the Shutter Speed Value Exif tag from the provided Exif object.
+// It returns the Shutter Speed Value as an interface{} type, and an error if the tag retrieval fails.
+func getExifShutterSpeedValue(e Exif) (interface{}, error) {
+	var shutterSpeedValue interface{}
 	tag, err := e.Get(exif.ShutterSpeedValue)
 	if err != nil {
 		return nil, err
@@ -1360,6 +1486,8 @@ func getExifShutterSpeedValue(e Exif) (any, error) {
 	return &shutterSpeedValue, nil
 }
 
+// getExifSoftware retrieves the Software Exif tag from the provided Exif object.
+// It returns the Software as an *string, and an error if the tag retrieval fails.
 func getExifSoftware(e Exif) (*string, error) {
 	var software string
 	tag, err := e.Get(exif.Software)
@@ -1370,8 +1498,10 @@ func getExifSoftware(e Exif) (*string, error) {
 	return &software, nil
 }
 
-func getExifSpatialFrequencyResponse(e Exif) (any, error) {
-	var spatialFrequencyResponse any
+// getExifSpatialFrequencyResponse retrieves the Spatial Frequency Response Exif tag from the provided Exif object.
+// It returns the Spatial Frequency Response as an interface{} type, and an error if the tag retrieval fails.
+func getExifSpatialFrequencyResponse(e Exif) (interface{}, error) {
+	var spatialFrequencyResponse interface{}
 	tag, err := e.Get(exif.SpatialFrequencyResponse)
 	if err != nil {
 		return nil, err
@@ -1380,8 +1510,10 @@ func getExifSpatialFrequencyResponse(e Exif) (any, error) {
 	return &spatialFrequencyResponse, nil
 }
 
-func getExifSpectralSensitivity(e Exif) (any, error) {
-	var spectralSensitivity any
+// getExifSpectralSensitivity retrieves the Spectral Sensitivity Exif tag from the provided Exif object.
+// It returns the Spectral Sensitivity as an interface{} type, and an error if the tag retrieval fails.
+func getExifSpectralSensitivity(e Exif) (interface{}, error) {
+	var spectralSensitivity interface{}
 	tag, err := e.Get(exif.SpectralSensitivity)
 	if err != nil {
 		return nil, err
@@ -1390,6 +1522,8 @@ func getExifSpectralSensitivity(e Exif) (any, error) {
 	return &spectralSensitivity, nil
 }
 
+// getExifSubSecTime retrieves the SubSecTime Exif tag from the provided Exif object.
+// It returns the SubSecTime as an *int, and an error if the tag retrieval or conversion fails.
 func getExifSubSecTime(e Exif) (*int, error) {
 	var subSecTime int
 	tag, err := e.Get(exif.SubSecTime)
@@ -1404,6 +1538,8 @@ func getExifSubSecTime(e Exif) (*int, error) {
 	return &subSecTime, nil
 }
 
+// getExifSubSecTimeDigitized retrieves the SubSecTimeDigitized Exif tag from the provided Exif object.
+// It returns the SubSecTimeDigitized as an *int, and an error if the tag retrieval or conversion fails.
 func getExifSubSecTimeDigitized(e Exif) (*int, error) {
 	var subSecTimeDigitized int
 	tag, err := e.Get(exif.SubSecTimeDigitized)
@@ -1417,6 +1553,8 @@ func getExifSubSecTimeDigitized(e Exif) (*int, error) {
 	return &subSecTimeDigitized, nil
 }
 
+// getExifSubSecTimeOriginal retrieves the SubSecTimeOriginal Exif tag from the provided Exif object.
+// It returns the SubSecTimeOriginal as an *int, and an error if the tag retrieval or conversion fails.
 func getExifSubSecTimeOriginal(e Exif) (*int, error) {
 	var subSecTimeOriginal int
 	tag, err := e.Get(exif.SubSecTimeOriginal)
@@ -1430,8 +1568,10 @@ func getExifSubSecTimeOriginal(e Exif) (*int, error) {
 	return &subSecTimeOriginal, nil
 }
 
-func getExifSubjectArea(e Exif) (any, error) {
-	var subjectArea any
+// getExifSubjectArea retrieves the Subject Area Exif tag from the provided Exif object.
+// It returns the Subject Area as an interface{} type, and an error if the tag retrieval fails.
+func getExifSubjectArea(e Exif) (interface{}, error) {
+	var subjectArea interface{}
 	tag, err := e.Get(exif.SubjectArea)
 	if err != nil {
 		return nil, err
@@ -1440,8 +1580,10 @@ func getExifSubjectArea(e Exif) (any, error) {
 	return &subjectArea, nil
 }
 
-func getExifSubjectDistance(e Exif) (any, error) {
-	var subjectDistance any
+// getExifSubjectDistance retrieves the Subject Distance Exif tag from the provided Exif object.
+// It returns the Subject Distance as an interface{} type, and an error if the tag retrieval fails.
+func getExifSubjectDistance(e Exif) (interface{}, error) {
+	var subjectDistance interface{}
 	tag, err := e.Get(exif.SubjectDistance)
 	if err != nil {
 		return nil, err
@@ -1450,8 +1592,10 @@ func getExifSubjectDistance(e Exif) (any, error) {
 	return &subjectDistance, nil
 }
 
-func getExifSubjectDistanceRange(e Exif) (any, error) {
-	var subjectDistanceRange any
+// getExifSubjectDistanceRange retrieves the Subject Distance Range Exif tag from the provided Exif object.
+// It returns the Subject Distance Range as an interface{} type, and an error if the tag retrieval fails.
+func getExifSubjectDistanceRange(e Exif) (interface{}, error) {
+	var subjectDistanceRange interface{}
 	tag, err := e.Get(exif.SubjectDistanceRange)
 	if err != nil {
 		return nil, err
@@ -1460,8 +1604,10 @@ func getExifSubjectDistanceRange(e Exif) (any, error) {
 	return &subjectDistanceRange, nil
 }
 
-func getExifSubjectLocation(e Exif) (any, error) {
-	var subjectLocation any
+// getExifSubjectLocation retrieves the Subject Location Exif tag from the provided Exif object.
+// It returns the Subject Location as an interface{} type, and an error if the tag retrieval fails.
+func getExifSubjectLocation(e Exif) (interface{}, error) {
+	var subjectLocation interface{}
 	tag, err := e.Get(exif.SubjectLocation)
 	if err != nil {
 		return nil, err
@@ -1470,6 +1616,8 @@ func getExifSubjectLocation(e Exif) (any, error) {
 	return &subjectLocation, nil
 }
 
+// getExifThumbJPEGInterchangeFormat retrieves the ThumbJPEGInterchangeFormat Exif tag from the provided Exif object.
+// It returns the ThumbJPEGInterchangeFormat as an *int, and an error if the tag retrieval or conversion fails.
 func getExifThumbJPEGInterchangeFormat(e Exif) (*int, error) {
 	var thumbJPEGInterchangeFormat int
 	tag, err := e.Get(exif.ThumbJPEGInterchangeFormat)
@@ -1483,6 +1631,8 @@ func getExifThumbJPEGInterchangeFormat(e Exif) (*int, error) {
 	return &thumbJPEGInterchangeFormat, nil
 }
 
+// getExifThumbJPEGInterchangeFormatLength retrieves the ThumbJPEGInterchangeFormatLength Exif tag from the provided Exif object.
+// It returns the ThumbJPEGInterchangeFormatLength as an *int, and an error if the tag retrieval or conversion fails.
 func getExifThumbJPEGInterchangeFormatLength(e Exif) (*int, error) {
 	var thumbJPEGInterchangeFormatLength int
 	tag, err := e.Get(exif.ThumbJPEGInterchangeFormatLength)
@@ -1496,6 +1646,8 @@ func getExifThumbJPEGInterchangeFormatLength(e Exif) (*int, error) {
 	return &thumbJPEGInterchangeFormatLength, nil
 }
 
+// getExifUserComment retrieves the UserComment Exif tag from the provided Exif object.
+// It returns the UserComment as a *string, and an error if the tag retrieval fails.
 func getExifUserComment(e Exif) (*string, error) {
 	var userComment string
 	tag, err := e.Get(exif.UserComment)
@@ -1506,6 +1658,8 @@ func getExifUserComment(e Exif) (*string, error) {
 	return &userComment, nil
 }
 
+// getExifWhiteBalance retrieves the WhiteBalance Exif tag from the provided Exif object.
+// It returns the WhiteBalance as an *int, and an error if the tag retrieval or conversion fails.
 func getExifWhiteBalance(e Exif) (*int, error) {
 	var whiteBalance int
 	tag, err := e.Get(exif.WhiteBalance)
@@ -1519,8 +1673,10 @@ func getExifWhiteBalance(e Exif) (*int, error) {
 	return &whiteBalance, nil
 }
 
-func getExifXPAuthor(e Exif) (any, error) {
-	var xPAuthor any
+// getExifXPAuthor retrieves the XPAuthor Exif tag from the provided Exif object.
+// It returns the XPAuthor as an interface{}, and an error if the tag retrieval fails.
+func getExifXPAuthor(e Exif) (interface{}, error) {
+	var xPAuthor interface{}
 	tag, err := e.Get(exif.XPAuthor)
 	if err != nil {
 		return nil, err
@@ -1529,8 +1685,10 @@ func getExifXPAuthor(e Exif) (any, error) {
 	return &xPAuthor, nil
 }
 
-func getExifXPComment(e Exif) (any, error) {
-	var xPComment any
+// getExifXPComment retrieves the XPComment Exif tag from the provided Exif object.
+// It returns the XPComment as an interface{}, and an error if the tag retrieval fails.
+func getExifXPComment(e Exif) (interface{}, error) {
+	var xPComment interface{}
 	tag, err := e.Get(exif.XPComment)
 	if err != nil {
 		return nil, err
@@ -1539,8 +1697,10 @@ func getExifXPComment(e Exif) (any, error) {
 	return &xPComment, nil
 }
 
-func getExifXPKeywords(e Exif) (any, error) {
-	var xPKeywords any
+// getExifXPKeywords retrieves the XPKeywords Exif tag from the provided Exif object.
+// It returns the XPKeywords as an interface{}, and an error if the tag retrieval fails.
+func getExifXPKeywords(e Exif) (interface{}, error) {
+	var xPKeywords interface{}
 	tag, err := e.Get(exif.XPKeywords)
 	if err != nil {
 		return nil, err
@@ -1549,8 +1709,10 @@ func getExifXPKeywords(e Exif) (any, error) {
 	return &xPKeywords, nil
 }
 
-func getExifXPSubject(e Exif) (any, error) {
-	var xPSubject any
+// getExifXPSubject retrieves the XPSubject Exif tag from the provided Exif object.
+// It returns the XPSubject as an interface{}, and an error if the tag retrieval fails.
+func getExifXPSubject(e Exif) (interface{}, error) {
+	var xPSubject interface{}
 	tag, err := e.Get(exif.XPSubject)
 	if err != nil {
 		return nil, err
@@ -1559,8 +1721,10 @@ func getExifXPSubject(e Exif) (any, error) {
 	return &xPSubject, nil
 }
 
-func getExifXPTitle(e Exif) (any, error) {
-	var xPTitle any
+// getExifXPTitle retrieves the XPTitle Exif tag from the provided Exif object.
+// It returns the XPTitle as an interface{}, and an error if the tag retrieval fails.
+func getExifXPTitle(e Exif) (interface{}, error) {
+	var xPTitle interface{}
 	tag, err := e.Get(exif.XPTitle)
 	if err != nil {
 		return nil, err
@@ -1569,6 +1733,8 @@ func getExifXPTitle(e Exif) (any, error) {
 	return &xPTitle, nil
 }
 
+// getExifXResolution retrieves the XResolution Exif tag from the provided Exif object.
+// It returns the XResolution as a *string, and an error if the tag retrieval fails.
 func getExifXResolution(e Exif) (*string, error) {
 	var xResolution string
 	tag, err := e.Get(exif.XResolution)
@@ -1579,6 +1745,8 @@ func getExifXResolution(e Exif) (*string, error) {
 	return &xResolution, nil
 }
 
+// getExifYCbCrPositioning retrieves the YCbCrPositioning Exif tag from the provided Exif object.
+// It returns the YCbCrPositioning as an *int, and an error if the tag retrieval or conversion fails.
 func getExifYCbCrPositioning(e Exif) (*int, error) {
 	var yCbCrPositioning int
 	tag, err := e.Get(exif.YCbCrPositioning)
@@ -1592,8 +1760,10 @@ func getExifYCbCrPositioning(e Exif) (*int, error) {
 	return &yCbCrPositioning, nil
 }
 
-func getExifYCbCrSubSampling(e Exif) (any, error) {
-	var yCbCrSubSampling any
+// getExifYCbCrSubSampling retrieves the YCbCrSubSampling Exif tag from the provided Exif object.
+// It returns the YCbCrSubSampling as an interface{}, and an error if the tag retrieval fails.
+func getExifYCbCrSubSampling(e Exif) (interface{}, error) {
+	var yCbCrSubSampling interface{}
 	tag, err := e.Get(exif.YCbCrSubSampling)
 	if err != nil {
 		return nil, err
@@ -1602,6 +1772,8 @@ func getExifYCbCrSubSampling(e Exif) (any, error) {
 	return &yCbCrSubSampling, nil
 }
 
+// getExifYResolution retrieves the YResolution Exif tag from the provided Exif object.
+// It returns the YResolution as a *string, and an error if the tag retrieval fails.
 func getExifYResolution(e Exif) (*string, error) {
 	var yResolution string
 	tag, err := e.Get(exif.YResolution)
@@ -1612,366 +1784,144 @@ func getExifYResolution(e Exif) (*string, error) {
 	return &yResolution, nil
 }
 
+// openExif opens an image file at the given filename and extracts Exif metadata.
+// It returns a pointer to ExifMetadata and any error encountered during the process.
+func openExif(filename string) (*ExifMetadata, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	return getExif(file)
+}
+
+// setExif sets various Exif metadata fields using the Exif struct and logs any encountered errors.
 func setExif(exifMetadata *ExifMetadata, e Exif) {
-	if err := setExifMetadataApertureValue(exifMetadata, e); err != nil {
-		log.Printf("ApertureValue: %s", err)
-	}
-	if err := setExifMetadataArtist(exifMetadata, e); err != nil {
-		log.Printf("Artist: %s", err)
-	}
-	if err := setExifMetadataBitsPerSample(exifMetadata, e); err != nil {
-		log.Printf("BitsPerSample: %s", err)
-	}
-	if err := setExifMetadataBrightnessValue(exifMetadata, e); err != nil {
-		log.Printf("BrightnessValue: %s", err)
-	}
-	if err := setExifMetadataCFAPattern(exifMetadata, e); err != nil {
-		log.Printf("CFAPattern: %s", err)
-	}
-	if err := setExifMetadataColorSpace(exifMetadata, e); err != nil {
-		log.Printf("ColorSpace: %s", err)
-	}
-	if err := setExifMetadataComponentsConfiguration(exifMetadata, e); err != nil {
-		log.Printf("ComponentsConfiguration: %s", err)
-	}
-	if err := setExifMetadataCompressedBitsPerPixel(exifMetadata, e); err != nil {
-		log.Printf("CompressedBitsPerPixel: %s", err)
-	}
-	if err := setExifMetadataCompression(exifMetadata, e); err != nil {
-		log.Printf("Compression: %s", err)
-	}
-	if err := setExifMetadataContrast(exifMetadata, e); err != nil {
-		log.Printf("Contrast: %s", err)
-	}
-	if err := setExifMetadataCopyright(exifMetadata, e); err != nil {
-		log.Printf("Copyright: %s", err)
-	}
-	if err := setExifMetadataCustomRendered(exifMetadata, e); err != nil {
-		log.Printf("CustomRendered: %s", err)
-	}
-	if err := setExifMetadataDateTime(exifMetadata, e); err != nil {
-		log.Printf("DateTime: %s", err)
-	}
-	if err := setExifMetadataDateTimeDigitized(exifMetadata, e); err != nil {
-		log.Printf("DateTimeDigitized: %s", err)
-	}
-	if err := setExifMetadataDateTimeOriginal(exifMetadata, e); err != nil {
-		log.Printf("DateTimeOriginal: %s", err)
-	}
-	if err := setExifMetadataDeviceSettingDescription(exifMetadata, e); err != nil {
-		log.Printf("DeviceSettingDescription: %s", err)
-	}
-	if err := setExifMetadataDigitalZoomRatio(exifMetadata, e); err != nil {
-		log.Printf("DigitalZoomRatio: %s", err)
-	}
-	if err := setExifMetadataExifIFDPointer(exifMetadata, e); err != nil {
-		log.Printf("ExifIFDPointer: %s", err)
-	}
-	if err := setExifMetadataExifVersion(exifMetadata, e); err != nil {
-		log.Printf("ExifVersion: %s", err)
-	}
-	if err := setExifMetadataExposureBiasValue(exifMetadata, e); err != nil {
-		log.Printf("ExposureBiasValue: %s", err)
-	}
-	if err := setExifMetadataExposureIndex(exifMetadata, e); err != nil {
-		log.Printf("ExposureIndex: %s", err)
-	}
-	if err := setExifMetadataExposureMode(exifMetadata, e); err != nil {
-		log.Printf("ExposureMode: %s", err)
-	}
-	if err := setExifMetadataExposureProgram(exifMetadata, e); err != nil {
-		log.Printf("ExposureProgram: %s", err)
-	}
-	if err := setExifMetadataExposureTime(exifMetadata, e); err != nil {
-		log.Printf("ExposureTime: %s", err)
-	}
-	if err := setExifMetadataFNumber(exifMetadata, e); err != nil {
-		log.Printf("FNumber: %s", err)
-	}
-	if err := setExifMetadataFileSource(exifMetadata, e); err != nil {
-		log.Printf("FileSource: %s", err)
-	}
-	if err := setExifMetadataFlash(exifMetadata, e); err != nil {
-		log.Printf("Flash: %s", err)
-	}
-	if err := setExifMetadataFlashEnergy(exifMetadata, e); err != nil {
-		log.Printf("FlashEnergy: %s", err)
-	}
-	if err := setExifMetadataFlashpixVersion(exifMetadata, e); err != nil {
-		log.Printf("FlashpixVersion: %s", err)
-	}
-	if err := setExifMetadataFocalLength(exifMetadata, e); err != nil {
-		log.Printf("FocalLength: %s", err)
-	}
-	if err := setExifMetadataFocalLengthIn35mmFilm(exifMetadata, e); err != nil {
-		log.Printf("FocalLengthIn35mmFilm: %s", err)
-	}
-	if err := setExifMetadataFocalPlaneResolutionUnit(exifMetadata, e); err != nil {
-		log.Printf("FocalPlaneResolutionUnit: %s", err)
-	}
-	if err := setExifMetadataFocalPlaneXResolution(exifMetadata, e); err != nil {
-		log.Printf("FocalPlaneXResolution: %s", err)
-	}
-	if err := setExifMetadataFocalPlaneYResolution(exifMetadata, e); err != nil {
-		log.Printf("FocalPlaneYResolution: %s", err)
-	}
-	if err := setExifMetadataGPSAltitude(exifMetadata, e); err != nil {
-		log.Printf("GPSAltitude: %s", err)
-	}
-	if err := setExifMetadataGPSAltitudeRef(exifMetadata, e); err != nil {
-		log.Printf("GPSAltitudeRef: %s", err)
-	}
-	if err := setExifMetadataGPSAreaInformation(exifMetadata, e); err != nil {
-		log.Printf("GPSAreaInformation: %s", err)
-	}
-	if err := setExifMetadataGPSDOP(exifMetadata, e); err != nil {
-		log.Printf("GPSDOP: %s", err)
-	}
-	if err := setExifMetadataGPSDateStamp(exifMetadata, e); err != nil {
-		log.Printf("GPSDateStamp: %s", err)
-	}
-	if err := setExifMetadataGPSDestBearing(exifMetadata, e); err != nil {
-		log.Printf("GPSDestBearing: %s", err)
-	}
-	if err := setExifMetadataGPSDestBearingRef(exifMetadata, e); err != nil {
-		log.Printf("GPSDestBearingRef: %s", err)
-	}
-	if err := setExifMetadataGPSDestDistance(exifMetadata, e); err != nil {
-		log.Printf("GPSDestDistance: %s", err)
-	}
-	if err := setExifMetadataGPSDestDistanceRef(exifMetadata, e); err != nil {
-		log.Printf("GPSDestDistanceRef: %s", err)
-	}
-	if err := setExifMetadataGPSDestLatitude(exifMetadata, e); err != nil {
-		log.Printf("GPSDestLatitude: %s", err)
-	}
-	if err := setExifMetadataGPSDestLatitudeRef(exifMetadata, e); err != nil {
-		log.Printf("GPSDestLatitudeRef: %s", err)
-	}
-	if err := setExifMetadataGPSDestLongitude(exifMetadata, e); err != nil {
-		log.Printf("GPSDestLongitude: %s", err)
-	}
-	if err := setExifMetadataGPSDestLongitudeRef(exifMetadata, e); err != nil {
-		log.Printf("GPSDestLongitudeRef: %s", err)
-	}
-	if err := setExifMetadataGPSDifferential(exifMetadata, e); err != nil {
-		log.Printf("GPSDifferential: %s", err)
-	}
-	if err := setExifMetadataGPSImgDirection(exifMetadata, e); err != nil {
-		log.Printf("GPSImgDirection: %s", err)
-	}
-	if err := setExifMetadataGPSImgDirectionRef(exifMetadata, e); err != nil {
-		log.Printf("GPSImgDirectionRef: %s", err)
-	}
-	if err := setExifMetadataGPSInfoIFDPointer(exifMetadata, e); err != nil {
-		log.Printf("GPSInfoIFDPointer: %s", err)
-	}
-	if err := setExifMetadataGPSLatitude(exifMetadata, e); err != nil {
-		log.Printf("GPSLatitude: %s", err)
-	}
-	if err := setExifMetadataGPSLatitudeRef(exifMetadata, e); err != nil {
-		log.Printf("GPSLatitudeRef: %s", err)
-	}
-	if err := setExifMetadataGPSLongitude(exifMetadata, e); err != nil {
-		log.Printf("GPSLongitude: %s", err)
-	}
-	if err := setExifMetadataGPSLongitudeRef(exifMetadata, e); err != nil {
-		log.Printf("GPSLongitudeRef: %s", err)
-	}
-	if err := setExifMetadataGPSMapDatum(exifMetadata, e); err != nil {
-		log.Printf("GPSMapDatum: %s", err)
-	}
-	if err := setExifMetadataGPSMeasureMode(exifMetadata, e); err != nil {
-		log.Printf("GPSMeasureMode: %s", err)
-	}
-	if err := setExifMetadataGPSProcessingMethod(exifMetadata, e); err != nil {
-		log.Printf("GPSProcessingMethod: %s", err)
-	}
-	if err := setExifMetadataGPSSatelites(exifMetadata, e); err != nil {
-		log.Printf("GPSSatelites: %s", err)
-	}
-	if err := setExifMetadataGPSSpeed(exifMetadata, e); err != nil {
-		log.Printf("GPSSpeed: %s", err)
-	}
-	if err := setExifMetadataGPSSpeedRef(exifMetadata, e); err != nil {
-		log.Printf("GPSSpeedRef: %s", err)
-	}
-	if err := setExifMetadataGPSStatus(exifMetadata, e); err != nil {
-		log.Printf("GPSStatus: %s", err)
-	}
-	if err := setExifMetadataGPSTimeStamp(exifMetadata, e); err != nil {
-		log.Printf("GPSTimeStamp: %s", err)
-	}
-	if err := setExifMetadataGPSTrack(exifMetadata, e); err != nil {
-		log.Printf("GPSTrack: %s", err)
-	}
-	if err := setExifMetadataGPSTrackRef(exifMetadata, e); err != nil {
-		log.Printf("GPSTrackRef: %s", err)
-	}
-	if err := setExifMetadataGPSVersionID(exifMetadata, e); err != nil {
-		log.Printf("GPSVersionID: %s", err)
-	}
-	if err := setExifMetadataGainControl(exifMetadata, e); err != nil {
-		log.Printf("GainControl: %s", err)
-	}
-	if err := setExifMetadataISOSpeedRatings(exifMetadata, e); err != nil {
-		log.Printf("ISOSpeedRatings: %s", err)
-	}
-	if err := setExifMetadataImageDescription(exifMetadata, e); err != nil {
-		log.Printf("ImageDescription: %s", err)
-	}
-	if err := setExifMetadataImageLength(exifMetadata, e); err != nil {
-		log.Printf("ImageLength: %s", err)
-	}
-	if err := setExifMetadataImageUniqueID(exifMetadata, e); err != nil {
-		log.Printf("ImageUniqueID: %s", err)
-	}
-	if err := setExifMetadataImageWidth(exifMetadata, e); err != nil {
-		log.Printf("ImageWidth: %s", err)
-	}
-	if err := setExifMetadataInteroperabilityIFDPointer(exifMetadata, e); err != nil {
-		log.Printf("InteroperabilityIFDPointer: %s", err)
-	}
-	if err := setExifMetadataInteroperabilityIndex(exifMetadata, e); err != nil {
-		log.Printf("InteroperabilityIndex: %s", err)
-	}
-	if err := setExifMetadataLensMake(exifMetadata, e); err != nil {
-		log.Printf("LensMake: %s", err)
-	}
-	if err := setExifMetadataLensModel(exifMetadata, e); err != nil {
-		log.Printf("LensModel: %s", err)
-	}
-	if err := setExifMetadataLightSource(exifMetadata, e); err != nil {
-		log.Printf("LightSource: %s", err)
-	}
-	if err := setExifMetadataMake(exifMetadata, e); err != nil {
-		log.Printf("Make: %s", err)
-	}
-	if err := setExifMetadataMakerNote(exifMetadata, e); err != nil {
-		log.Printf("MakerNote: %s", err)
-	}
-	if err := setExifMetadataMaxApertureValue(exifMetadata, e); err != nil {
-		log.Printf("MaxApertureValue: %s", err)
-	}
-	if err := setExifMetadataMeteringMode(exifMetadata, e); err != nil {
-		log.Printf("MeteringMode: %s", err)
-	}
-	if err := setExifMetadataModel(exifMetadata, e); err != nil {
-		log.Printf("Model: %s", err)
-	}
-	if err := setExifMetadataOECF(exifMetadata, e); err != nil {
-		log.Printf("OECF: %s", err)
-	}
-	if err := setExifMetadataOrientation(exifMetadata, e); err != nil {
-		log.Printf("Orientation: %s", err)
-	}
-	if err := setExifMetadataPhotometricInterpretation(exifMetadata, e); err != nil {
-		log.Printf("PhotometricInterpretation: %s", err)
-	}
-	if err := setExifMetadataPixelXDimension(exifMetadata, e); err != nil {
-		log.Printf("PixelXDimension: %s", err)
-	}
-	if err := setExifMetadataPixelYDimension(exifMetadata, e); err != nil {
-		log.Printf("PixelYDimension: %s", err)
-	}
-	if err := setExifMetadataPlanarConfiguration(exifMetadata, e); err != nil {
-		log.Printf("PlanarConfiguration: %s", err)
-	}
-	if err := setExifMetadataRelatedSoundFile(exifMetadata, e); err != nil {
-		log.Printf("RelatedSoundFile: %s", err)
-	}
-	if err := setExifMetadataResolutionUnit(exifMetadata, e); err != nil {
-		log.Printf("ResolutionUnit: %s", err)
-	}
-	if err := setExifMetadataSamplesPerPixel(exifMetadata, e); err != nil {
-		log.Printf("SamplesPerPixel: %s", err)
-	}
-	if err := setExifMetadataSaturation(exifMetadata, e); err != nil {
-		log.Printf("Saturation: %s", err)
-	}
-	if err := setExifMetadataSceneCaptureType(exifMetadata, e); err != nil {
-		log.Printf("SceneCaptureType: %s", err)
-	}
-	if err := setExifMetadataSceneType(exifMetadata, e); err != nil {
-		log.Printf("SceneType: %s", err)
-	}
-	if err := setExifMetadataSensingMethod(exifMetadata, e); err != nil {
-		log.Printf("SensingMethod: %s", err)
-	}
-	if err := setExifMetadataSharpness(exifMetadata, e); err != nil {
-		log.Printf("Sharpness: %s", err)
-	}
-	if err := setExifMetadataShutterSpeedValue(exifMetadata, e); err != nil {
-		log.Printf("ShutterSpeedValue: %s", err)
-	}
-	if err := setExifMetadataSoftware(exifMetadata, e); err != nil {
-		log.Printf("Software: %s", err)
-	}
-	if err := setExifMetadataSpatialFrequencyResponse(exifMetadata, e); err != nil {
-		log.Printf("SpatialFrequencyResponse: %s", err)
-	}
-	if err := setExifMetadataSpectralSensitivity(exifMetadata, e); err != nil {
-		log.Printf("SpectralSensitivity: %s", err)
-	}
-	if err := setExifMetadataSubSecTime(exifMetadata, e); err != nil {
-		log.Printf("SubSecTime: %s", err)
-	}
-	if err := setExifMetadataSubSecTimeDigitized(exifMetadata, e); err != nil {
-		log.Printf("SubSecTimeDigitized: %s", err)
-	}
-	if err := setExifMetadataSubSecTimeOriginal(exifMetadata, e); err != nil {
-		log.Printf("SubSecTimeOriginal: %s", err)
-	}
-	if err := setExifMetadataSubjectArea(exifMetadata, e); err != nil {
-		log.Printf("SubjectArea: %s", err)
-	}
-	if err := setExifMetadataSubjectDistance(exifMetadata, e); err != nil {
-		log.Printf("SubjectDistance: %s", err)
-	}
-	if err := setExifMetadataSubjectDistanceRange(exifMetadata, e); err != nil {
-		log.Printf("SubjectDistanceRange: %s", err)
-	}
-	if err := setExifMetadataSubjectLocation(exifMetadata, e); err != nil {
-		log.Printf("SubjectLocation: %s", err)
-	}
-	if err := setExifMetadataThumbJPEGInterchangeFormat(exifMetadata, e); err != nil {
-		log.Printf("ThumbJPEGInterchangeFormat: %s", err)
-	}
-	if err := setExifMetadataThumbJPEGInterchangeFormatLength(exifMetadata, e); err != nil {
-		log.Printf("ThumbJPEGInterchangeFormatLength: %s", err)
-	}
-	if err := setExifMetadataUserComment(exifMetadata, e); err != nil {
-		log.Printf("UserComment: %s", err)
-	}
-	if err := setExifMetadataWhiteBalance(exifMetadata, e); err != nil {
-		log.Printf("WhiteBalance: %s", err)
-	}
-	if err := setExifMetadataXPAuthor(exifMetadata, e); err != nil {
-		log.Printf("XPAuthor: %s", err)
-	}
-	if err := setExifMetadataXPComment(exifMetadata, e); err != nil {
-		log.Printf("XPComment: %s", err)
-	}
-	if err := setExifMetadataXPKeywords(exifMetadata, e); err != nil {
-		log.Printf("XPKeywords: %s", err)
-	}
-	if err := setExifMetadataXPSubject(exifMetadata, e); err != nil {
-		log.Printf("XPSubject: %s", err)
-	}
-	if err := setExifMetadataXPTitle(exifMetadata, e); err != nil {
-		log.Printf("XPTitle: %s", err)
-	}
-	if err := setExifMetadataXResolution(exifMetadata, e); err != nil {
-		log.Printf("XResolution: %s", err)
-	}
-	if err := setExifMetadataYCbCrPositioning(exifMetadata, e); err != nil {
-		log.Printf("YCbCrPositioning: %s", err)
-	}
-	if err := setExifMetadataYCbCrSubSampling(exifMetadata, e); err != nil {
-		log.Printf("YCbCrSubSampling: %s", err)
-	}
-	if err := setExifMetadataYResolution(exifMetadata, e); err != nil {
-		log.Printf("YResolution: %s", err)
+	exifSetters := map[exif.FieldName]func(*ExifMetadata, Exif) error{
+		exif.ApertureValue:                    setExifMetadataApertureValue,
+		exif.Artist:                           setExifMetadataArtist,
+		exif.BitsPerSample:                    setExifMetadataBitsPerSample,
+		exif.BrightnessValue:                  setExifMetadataBrightnessValue,
+		exif.CFAPattern:                       setExifMetadataCFAPattern,
+		exif.ColorSpace:                       setExifMetadataColorSpace,
+		exif.ComponentsConfiguration:          setExifMetadataComponentsConfiguration,
+		exif.CompressedBitsPerPixel:           setExifMetadataCompressedBitsPerPixel,
+		exif.Compression:                      setExifMetadataCompression,
+		exif.Contrast:                         setExifMetadataContrast,
+		exif.Copyright:                        setExifMetadataCopyright,
+		exif.CustomRendered:                   setExifMetadataCustomRendered,
+		exif.DateTime:                         setExifMetadataDateTime,
+		exif.DateTimeDigitized:                setExifMetadataDateTimeDigitized,
+		exif.DateTimeOriginal:                 setExifMetadataDateTimeOriginal,
+		exif.DeviceSettingDescription:         setExifMetadataDeviceSettingDescription,
+		exif.DigitalZoomRatio:                 setExifMetadataDigitalZoomRatio,
+		exif.ExifIFDPointer:                   setExifMetadataExifIFDPointer,
+		exif.ExifVersion:                      setExifMetadataExifVersion,
+		exif.ExposureBiasValue:                setExifMetadataExposureBiasValue,
+		exif.ExposureIndex:                    setExifMetadataExposureIndex,
+		exif.ExposureMode:                     setExifMetadataExposureMode,
+		exif.ExposureProgram:                  setExifMetadataExposureProgram,
+		exif.ExposureTime:                     setExifMetadataExposureTime,
+		exif.FNumber:                          setExifMetadataFNumber,
+		exif.FileSource:                       setExifMetadataFileSource,
+		exif.Flash:                            setExifMetadataFlash,
+		exif.FlashEnergy:                      setExifMetadataFlashEnergy,
+		exif.FlashpixVersion:                  setExifMetadataFlashpixVersion,
+		exif.FocalLength:                      setExifMetadataFocalLength,
+		exif.FocalLengthIn35mmFilm:            setExifMetadataFocalLengthIn35mmFilm,
+		exif.FocalPlaneResolutionUnit:         setExifMetadataFocalPlaneResolutionUnit,
+		exif.FocalPlaneXResolution:            setExifMetadataFocalPlaneXResolution,
+		exif.FocalPlaneYResolution:            setExifMetadataFocalPlaneYResolution,
+		exif.GPSAltitude:                      setExifMetadataGPSAltitude,
+		exif.GPSAltitudeRef:                   setExifMetadataGPSAltitudeRef,
+		exif.GPSAreaInformation:               setExifMetadataGPSAreaInformation,
+		exif.GPSDOP:                           setExifMetadataGPSDOP,
+		exif.GPSDateStamp:                     setExifMetadataGPSDateStamp,
+		exif.GPSDestBearing:                   setExifMetadataGPSDestBearing,
+		exif.GPSDestBearingRef:                setExifMetadataGPSDestBearingRef,
+		exif.GPSDestDistance:                  setExifMetadataGPSDestDistance,
+		exif.GPSDestDistanceRef:               setExifMetadataGPSDestDistanceRef,
+		exif.GPSDestLatitude:                  setExifMetadataGPSDestLatitude,
+		exif.GPSDestLatitudeRef:               setExifMetadataGPSDestLatitudeRef,
+		exif.GPSDestLongitude:                 setExifMetadataGPSDestLongitude,
+		exif.GPSDestLongitudeRef:              setExifMetadataGPSDestLongitudeRef,
+		exif.GPSDifferential:                  setExifMetadataGPSDifferential,
+		exif.GPSImgDirection:                  setExifMetadataGPSImgDirection,
+		exif.GPSImgDirectionRef:               setExifMetadataGPSImgDirectionRef,
+		exif.GPSInfoIFDPointer:                setExifMetadataGPSInfoIFDPointer,
+		exif.GPSLatitude:                      setExifMetadataGPSLatitude,
+		exif.GPSLatitudeRef:                   setExifMetadataGPSLatitudeRef,
+		exif.GPSLongitude:                     setExifMetadataGPSLongitude,
+		exif.GPSLongitudeRef:                  setExifMetadataGPSLongitudeRef,
+		exif.GPSMapDatum:                      setExifMetadataGPSMapDatum,
+		exif.GPSMeasureMode:                   setExifMetadataGPSMeasureMode,
+		exif.GPSProcessingMethod:              setExifMetadataGPSProcessingMethod,
+		exif.GPSSatelites:                     setExifMetadataGPSSatelites,
+		exif.GPSSpeed:                         setExifMetadataGPSSpeed,
+		exif.GPSSpeedRef:                      setExifMetadataGPSSpeedRef,
+		exif.GPSStatus:                        setExifMetadataGPSStatus,
+		exif.GPSTimeStamp:                     setExifMetadataGPSTimeStamp,
+		exif.GPSTrack:                         setExifMetadataGPSTrack,
+		exif.GPSTrackRef:                      setExifMetadataGPSTrackRef,
+		exif.GPSVersionID:                     setExifMetadataGPSVersionID,
+		exif.GainControl:                      setExifMetadataGainControl,
+		exif.ISOSpeedRatings:                  setExifMetadataISOSpeedRatings,
+		exif.ImageDescription:                 setExifMetadataImageDescription,
+		exif.ImageLength:                      setExifMetadataImageLength,
+		exif.ImageUniqueID:                    setExifMetadataImageUniqueID,
+		exif.ImageWidth:                       setExifMetadataImageWidth,
+		exif.InteroperabilityIFDPointer:       setExifMetadataInteroperabilityIFDPointer,
+		exif.InteroperabilityIndex:            setExifMetadataInteroperabilityIndex,
+		exif.LensMake:                         setExifMetadataLensMake,
+		exif.LensModel:                        setExifMetadataLensModel,
+		exif.LightSource:                      setExifMetadataLightSource,
+		exif.Make:                             setExifMetadataMake,
+		exif.MakerNote:                        setExifMetadataMakerNote,
+		exif.MaxApertureValue:                 setExifMetadataMaxApertureValue,
+		exif.MeteringMode:                     setExifMetadataMeteringMode,
+		exif.Model:                            setExifMetadataModel,
+		exif.OECF:                             setExifMetadataOECF,
+		exif.Orientation:                      setExifMetadataOrientation,
+		exif.PhotometricInterpretation:        setExifMetadataPhotometricInterpretation,
+		exif.PixelXDimension:                  setExifMetadataPixelXDimension,
+		exif.PixelYDimension:                  setExifMetadataPixelYDimension,
+		exif.PlanarConfiguration:              setExifMetadataPlanarConfiguration,
+		exif.RelatedSoundFile:                 setExifMetadataRelatedSoundFile,
+		exif.ResolutionUnit:                   setExifMetadataResolutionUnit,
+		exif.SamplesPerPixel:                  setExifMetadataSamplesPerPixel,
+		exif.Saturation:                       setExifMetadataSaturation,
+		exif.SceneCaptureType:                 setExifMetadataSceneCaptureType,
+		exif.SceneType:                        setExifMetadataSceneType,
+		exif.SensingMethod:                    setExifMetadataSensingMethod,
+		exif.Sharpness:                        setExifMetadataSharpness,
+		exif.ShutterSpeedValue:                setExifMetadataShutterSpeedValue,
+		exif.Software:                         setExifMetadataSoftware,
+		exif.SpatialFrequencyResponse:         setExifMetadataSpatialFrequencyResponse,
+		exif.SpectralSensitivity:              setExifMetadataSpectralSensitivity,
+		exif.SubSecTime:                       setExifMetadataSubSecTime,
+		exif.SubSecTimeDigitized:              setExifMetadataSubSecTimeDigitized,
+		exif.SubSecTimeOriginal:               setExifMetadataSubSecTimeOriginal,
+		exif.SubjectArea:                      setExifMetadataSubjectArea,
+		exif.SubjectDistance:                  setExifMetadataSubjectDistance,
+		exif.SubjectDistanceRange:             setExifMetadataSubjectDistanceRange,
+		exif.SubjectLocation:                  setExifMetadataSubjectLocation,
+		exif.ThumbJPEGInterchangeFormat:       setExifMetadataThumbJPEGInterchangeFormat,
+		exif.ThumbJPEGInterchangeFormatLength: setExifMetadataThumbJPEGInterchangeFormatLength,
+		exif.UserComment:                      setExifMetadataUserComment,
+		exif.WhiteBalance:                     setExifMetadataWhiteBalance,
+		exif.XPAuthor:                         setExifMetadataXPAuthor,
+		exif.XPComment:                        setExifMetadataXPComment,
+		exif.XPKeywords:                       setExifMetadataXPKeywords,
+		exif.XPSubject:                        setExifMetadataXPSubject,
+		exif.XPTitle:                          setExifMetadataXPTitle,
+		exif.XResolution:                      setExifMetadataXResolution,
+		exif.YCbCrPositioning:                 setExifMetadataYCbCrPositioning,
+		exif.YCbCrSubSampling:                 setExifMetadataYCbCrSubSampling,
+		exif.YResolution:                      setExifMetadataYResolution,
+	}
+	for exifFieldName, exifSetter := range exifSetters {
+		if err := exifSetter(exifMetadata, e); err != nil {
+			log.Printf("ExifMetadata.%s: Error=%s", exifFieldName, err)
+		}
 	}
 }
 

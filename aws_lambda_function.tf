@@ -22,7 +22,7 @@ resource "aws_lambda_function" "s3_object_notification_object_created_image" {
   skip_destroy     = false
   source_code_hash = sha256("./src/lambda_function/s3_object_notification/object_created/image/lambda.zip")
   role             = aws_iam_role.lambda_s3_bucket_notification.arn
-  timeout          = 3
+  timeout          = 60
   tracing_config {
     mode = "Active"
   }
