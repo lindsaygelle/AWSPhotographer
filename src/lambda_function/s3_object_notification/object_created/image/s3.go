@@ -175,7 +175,7 @@ func processS3ObjectImage(session *session.Session, s3Client *s3.S3, s3BucketNam
 	if err != nil {
 		log.Fatalf("Image: Error=%s", err)
 	}
-	s3ObjectKey := fmt.Sprintf("%s/%s.JPG", s3BucketFolderImagesCompressed, path.Base(fileName))
+	s3ObjectKey := fmt.Sprintf("%s/%s", s3BucketFolderImagesCompressed, path.Base(fileName))
 	s3PutObjectOutput, err := putS3ObjectImageJpg(s3Client, s3BucketName, s3ObjectKey, image)
 	if err != nil {
 		log.Fatalf("Image: Error=%s", err)

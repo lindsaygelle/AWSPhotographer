@@ -34,6 +34,9 @@ func handler(context context.Context, event *events.S3Event) {
 	if len(s3BucketFolderImagesUploaded) == 0 {
 		log.Fatalf("S3_BUCKET_FOLDER_IMAGES_UPLOADED")
 	}
+	if s3BucketFolderImagesUploaded == s3BucketFolderImagesCompressed {
+		log.Fatalf("S3_BUCKET_FOLDER_IMAGES_COMPRESSED == S3_BUCKET_FOLDER_IMAGES_UPLOADED")
+	}
 	session, err := session.NewSession()
 	if err != nil {
 		log.Fatalln(err)
