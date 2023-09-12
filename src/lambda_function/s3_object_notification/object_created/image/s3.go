@@ -59,23 +59,22 @@ func putS3ObjectExifMetadata(s3Client *s3.S3, s3BucketName string, s3ObjectKey s
 
 // putS3ObjectImageJpg uploads an image in JPEG format to the specified S3 bucket.
 // Returns the S3 PutObjectOutput and any error encountered.
-func putS3ObjectImageJpg(s3Client *s3.S3, s3BucketName string, s3ObjectKey string, sourceImage image.Image) (*s3.PutObjectOutput, error) {
+func putS3ObjectImageJpg(s3UploadManager *s3manager.Uploader, s3BucketName string, s3ObjectKey string, sourceImage image.Image) (*s3manager.UploadOutput, error) {
 	var buffer bytes.Buffer
 	err := jpeg.Encode(&buffer, sourceImage, nil)
 	if err != nil {
 		return nil, err
 	}
-	s3PutObjectInput := s3.PutObjectInput{
-		Body:          bytes.NewReader(buffer.Bytes()),
-		Bucket:        &s3BucketName,
-		ContentLength: aws.Int64(int64(len(buffer.Bytes()))),
-		ContentType:   aws.String("image/jpeg"),
-		Key:           &s3ObjectKey}
-	s3PutObjectOutput, err := s3Client.PutObject(&s3PutObjectInput)
+	s3ManagerUploadInput := s3manager.UploadInput{
+		Body:        bytes.NewReader(buffer.Bytes()),
+		Bucket:      &s3BucketName,
+		ContentType: aws.String("image/jpeg"),
+		Key:         &s3ObjectKey}
+	s3ManagerUploadOutput, err := s3UploadManager.Upload(&s3ManagerUploadInput)
 	if err != nil {
 		return nil, err
 	}
-	return s3PutObjectOutput, err
+	return s3ManagerUploadOutput, err
 }
 
 // processS3PutObjectOutput processes the output of an S3 PutObject operation.
@@ -95,6 +94,14 @@ func processS3PutObjectOutput(s3PutObjectOutput *s3.PutObjectOutput) {
 		s3PutObjectOutput.SSEKMSKeyId,
 		s3PutObjectOutput.ServerSideEncryption,
 		s3PutObjectOutput.VersionId)
+}
+
+func processS3ManagerUploadOutput(s3ManagerUploadOutput *s3manager.UploadOutput) {
+	log.Printf("S3managerUploadOutput: ETag=%v Location=%v UploadID=%v VersionID=%v",
+		s3ManagerUploadOutput.ETag,
+		s3ManagerUploadOutput.Location,
+		s3ManagerUploadOutput.UploadID,
+		s3ManagerUploadOutput.VersionID)
 }
 
 // processS3Bucket processes an AWS S3 bucket event.
@@ -176,9 +183,9 @@ func processS3ObjectImage(session *session.Session, s3Client *s3.S3, s3BucketNam
 		log.Fatalf("Image: Error=%s", err)
 	}
 	s3ObjectKey := fmt.Sprintf("%s/%s", s3BucketFolderImagesCompressed, path.Base(fileName))
-	s3PutObjectOutput, err := putS3ObjectImageJpg(s3Client, s3BucketName, s3ObjectKey, image)
+	s3ManagerUploadOutput, err := putS3ObjectImageJpg(s3manager.NewUploader(session), s3BucketName, s3ObjectKey, image)
 	if err != nil {
 		log.Fatalf("Image: Error=%s", err)
 	}
-	processS3PutObjectOutput(s3PutObjectOutput)
+	processS3ManagerUploadOutput(s3ManagerUploadOutput)
 }
