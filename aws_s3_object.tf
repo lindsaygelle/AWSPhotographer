@@ -22,6 +22,12 @@ resource "aws_s3_object" "images_compressed" {
   key          = "images/compressed/"
 }
 
+resource "aws_s3_object" "images_exif" {
+  bucket       = aws_s3_bucket.main.id
+  content_type = "application/x-directory"
+  key          = "images/exif/"
+}
+
 resource "aws_s3_object" "images_uploaded" {
   bucket       = aws_s3_bucket.main.id
   content_type = "application/x-directory"
