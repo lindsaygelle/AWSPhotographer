@@ -1,4 +1,4 @@
-module function
+module awsphotographer
 
 go 1.21.0
 

@@ -10,14 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
-const (
-	fileDirectory = "/tmp/"
-)
-
 var (
-	s3BucketFolderImagesCompressed = getEnvironmentVariable("S3_BUCKET_FOLDER_IMAGES_COMPRESSED")
-	s3BucketFolderImagesExif       = getEnvironmentVariable("S3_BUCKET_FOLDER_IMAGES_EXIF")
-	s3BucketFolderImagesUploaded   = getEnvironmentVariable("S3_BUCKET_FOLDER_IMAGES_UPLOADED")
+	s3BucketFolderImagesCompressed       = getEnvironmentVariable("S3_BUCKET_FOLDER_IMAGES_COMPRESSED")
+	s3BucketFolderRekognitionDetectFaces = getEnvironmentVariable("S3_BUCKET_FOLDER_REKOGNITION_DETECT_FACES")
 )
 
 func createAWSSession() *session.Session {
@@ -37,13 +32,12 @@ func getEnvironmentVariable(key string) string {
 }
 
 func handler(context context.Context, s3Event *events.S3Event) {
-	log.Printf("S3_BUCKET_FOLDER_IMAGES_COMPRESSED=%s S3_BUCKET_FOLDER_IMAGES_EXIF=%s S3_BUCKET_FOLDER_IMAGES_UPLOADED=%s",
+	log.Printf("S3_BUCKET_FOLDER_IMAGES_COMPRESSED=%s S3_BUCKET_FOLDER_REKOGNITION_DETECT_FACES=%s",
 		s3BucketFolderImagesCompressed,
-		s3BucketFolderImagesExif,
-		s3BucketFolderImagesUploaded)
+		s3BucketFolderRekognitionDetectFaces)
 
-	if s3BucketFolderImagesUploaded == s3BucketFolderImagesCompressed {
-		log.Fatalf("S3_BUCKET_FOLDER_IMAGES_COMPRESSED == S3_BUCKET_FOLDER_IMAGES_UPLOADED")
+	if s3BucketFolderImagesCompressed == s3BucketFolderRekognitionDetectFaces {
+		log.Fatalf("S3_BUCKET_FOLDER_IMAGES_COMPRESSED == S3_BUCKET_FOLDER_REKOGNITION")
 	}
 
 	awsSession := createAWSSession()
