@@ -5,12 +5,20 @@ import (
 	"log"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
+
+// Contains functions for processing AWS S3 events and managing S3 objects.
+
+// createS3ObjectKey generates an S3 object key based on the provided parameters.
+func createS3ObjectKey(s3BucketName string, fileName string, fileTime time.Time) string {
+	return fmt.Sprintf("%s/%s/%s", s3BucketName, fileTime.Format("2006/01/02"), fileName)
+}
 
 // processS3PutObjectOutput processes the output of an S3 PutObject operation.
 func processS3PutObjectOutput(s3PutObjectOutput *s3.PutObjectOutput) {
@@ -87,41 +95,79 @@ func processS3Object(session *session.Session, s3BucketName string, s3Object *ev
 		s3Object.Size,
 		s3Object.URLDecodedKey,
 		s3Object.VersionID)
+
+	// Construct the local file name for the S3 object.
 	fileName := fmt.Sprintf("%s/%s", fileDirectory, path.Base(s3Object.Key))
+
+	// Download the S3 object to the local file.
 	err := getS3Object(s3manager.NewDownloader(session), s3BucketName, s3Object.Key, fileName)
 	if err != nil {
 		log.Fatalf("S3Object: Bucket=%s Key=%s FileName=%s Error=%s", s3BucketName, s3Object.Key, fileName, err)
 	}
+
+	// Create an S3 client.
 	s3Client := s3.New(session)
+
+	// Process Exif metadata for the S3 object.
 	processS3ObjectExifMetadata(session, s3Client, s3BucketName, fileName)
-	processS3ObjectImage(session, s3Client, s3BucketName, fileName)
 }
 
 // processS3ObjectExifMetadata processes Exif metadata for an AWS S3 object event.
 func processS3ObjectExifMetadata(session *session.Session, s3Client *s3.S3, s3BucketName string, fileName string) {
+	log.Printf("ExifMetadata: BucketName=%s FileName=%s", s3BucketName, fileName)
+
+	// Open and extract Exif metadata from the image file.
 	exifMetadata, err := openExif(fileName)
 	if err != nil {
 		log.Fatalf("ExifMetadata: Error=%s", err)
 	}
-	fileName = strings.Split(path.Base(fileName), ".")[0]
-	s3ObjectKey := fmt.Sprintf("%s/%s.JSON", s3BucketFolderImagesExif, fileName)
+	log.Println("ExifMetata: Successfully created ExifMetadata")
+
+	// Create the S3 object key for the Exif metadata.
+	s3ObjectKey := createS3ObjectKey(s3BucketFolderImagesExif, fmt.Sprintf("%s.JSON", strings.Split(path.Base(fileName), ".")[0]), *exifMetadata.DateTime)
+	log.Printf("ExifMetadata: Bucket=%s Key=%s", s3BucketName, s3ObjectKey)
+
+	// Upload the Exif metadata to S3.
 	s3PutObjectOutput, err := putS3ObjectExifMetadata(s3Client, s3BucketName, s3ObjectKey, exifMetadata)
 	if err != nil {
 		log.Fatalf("ExifMetadata: Error=%s", err)
 	}
+	log.Println("ExifMetata: Successfully uploaded ExifMetadata")
+
+	// Process the S3 PutObject output.
 	processS3PutObjectOutput(s3PutObjectOutput)
+
+	// Process the image itself.
+	processS3ObjectImage(session, s3Client, s3BucketName, fileName, *exifMetadata.DateTime)
 }
 
 // processS3ObjectImage processes an image for an AWS S3 object event.
-func processS3ObjectImage(session *session.Session, s3Client *s3.S3, s3BucketName string, fileName string) {
+func processS3ObjectImage(session *session.Session, s3Client *s3.S3, s3BucketName string, fileName string, fileTime time.Time) {
+	log.Printf("CompressImage: BucketName=%s FileName=%s", s3BucketName, fileName)
+
+	// Open and prepare the image for compression.
 	image, err := openImage(fileName)
 	if err != nil {
-		log.Fatalf("Image: Error=%s", err)
+		log.Fatalf("CompressImage: Error=%s", err)
 	}
-	s3ObjectKey := fmt.Sprintf("%s/%s", s3BucketFolderImagesCompressed, path.Base(fileName))
+	log.Println("CompressImage: Successfully created image")
+
+	// Ensure that the compressed folder configuration is correct.
+	if strings.Contains(s3BucketFolderImagesCompressed, "upload") {
+		log.Panicf("Compressed folder is incorrect! %s", s3BucketFolderImagesCompressed)
+	}
+
+	// Create the S3 object key for the compressed image.
+	s3ObjectKey := createS3ObjectKey(s3BucketFolderImagesCompressed, path.Base(fileName), fileTime)
+	log.Printf("CompressImage: Bucket=%s Key=%s", s3BucketName, s3ObjectKey)
+
+	// Upload the compressed image to S3.
 	s3ManagerUploadOutput, err := putS3ObjectImageJpg(s3manager.NewUploader(session), s3BucketName, s3ObjectKey, image)
 	if err != nil {
 		log.Fatalf("Image: Error=%s", err)
 	}
+	log.Println("CompressImage: Successfully uploaded image")
+
+	// Process the S3 Upload output.
 	processS3ManagerUploadOutput(s3ManagerUploadOutput)
 }

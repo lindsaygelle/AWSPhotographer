@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rwcarlsen/goexif/exif"
 )
@@ -47,9 +48,9 @@ type ExifMetadata struct {
 	Contrast                         *int        `json:"Contrast"`
 	Copyright                        interface{} `json:"Copyright"`
 	CustomRendered                   interface{} `json:"CustomRendered"`
-	DateTime                         *string     `json:"DateTime"`
-	DateTimeDigitized                *string     `json:"DateTimeDigitized"`
-	DateTimeOriginal                 *string     `json:"DateTimeOriginal"`
+	DateTime                         *time.Time  `json:"DateTime"`
+	DateTimeDigitized                *time.Time  `json:"DateTimeDigitized"`
+	DateTimeOriginal                 *time.Time  `json:"DateTimeOriginal"`
 	DeviceSettingDescription         interface{} `json:"DeviceSettingDescription"`
 	DigitalZoomRatio                 *string     `json:"DigitalZoomRatio"`
 	ExifIFDPointer                   *int        `json:"ExifIFDPointer"`
@@ -354,15 +355,15 @@ func getExifCustomRendered(e Exif) (*int, error) {
 }
 
 // getExifDateTime retrieves the Date and Time Exif tag from the provided Exif object.
-// It returns the Date and Time as a *string, and an error if the tag retrieval or conversion fails.
-func getExifDateTime(e Exif) (*string, error) {
-	var dateTime string
+// It returns the Date and Time as a *time.Time, and an error if the tag retrieval or conversion fails.
+func getExifDateTime(e Exif) (*time.Time, error) {
+	var dateTime time.Time
 	tag, err := e.Get(exif.DateTime)
 	if err != nil {
 		return nil, err
 	}
 	// Get the string value of the tag.
-	dateTime, err = tag.StringVal()
+	dateTime, err = time.Parse("2006:01:02 15:04:05", strings.Trim(tag.String(), "\""))
 	if err != nil {
 		return nil, err
 	}
@@ -370,15 +371,15 @@ func getExifDateTime(e Exif) (*string, error) {
 }
 
 // getExifDateTimeDigitized retrieves the Date and Time Digitized Exif tag from the provided Exif object.
-// It returns the Date and Time Digitized as a *string, and an error if the tag retrieval or conversion fails.
-func getExifDateTimeDigitized(e Exif) (*string, error) {
-	var dateTimeDigitized string
+// It returns the Date and Time Digitized as a *tim.eTime, and an error if the tag retrieval or conversion fails.
+func getExifDateTimeDigitized(e Exif) (*time.Time, error) {
+	var dateTimeDigitized time.Time
 	tag, err := e.Get(exif.DateTimeDigitized)
 	if err != nil {
 		return nil, err
 	}
 	// Get the string value of the tag.
-	dateTimeDigitized, err = tag.StringVal()
+	dateTimeDigitized, err = time.Parse("2006:01:02 15:04:05", strings.Trim(tag.String(), "\""))
 	if err != nil {
 		return nil, err
 	}
@@ -386,15 +387,15 @@ func getExifDateTimeDigitized(e Exif) (*string, error) {
 }
 
 // getExifDateTimeOriginal retrieves the Original Date and Time Exif tag from the provided Exif object.
-// It returns the Original Date and Time as a *string, and an error if the tag retrieval or conversion fails.
-func getExifDateTimeOriginal(e Exif) (*string, error) {
-	var dateTimeOriginal string
+// It returns the Original Date and Time as a *time.Time, and an error if the tag retrieval or conversion fails.
+func getExifDateTimeOriginal(e Exif) (*time.Time, error) {
+	var dateTimeOriginal time.Time
 	tag, err := e.Get(exif.DateTimeOriginal)
 	if err != nil {
 		return nil, err
 	}
 	// Get the string value of the tag.
-	dateTimeOriginal, err = tag.StringVal()
+	dateTimeOriginal, err = time.Parse("2006:01:02 15:04:05", strings.Trim(tag.String(), "\""))
 	if err != nil {
 		return nil, err
 	}
@@ -1786,12 +1787,16 @@ func getExifYResolution(e Exif) (*string, error) {
 
 // openExif opens an image file at the given filename and extracts Exif metadata.
 // It returns a pointer to ExifMetadata and any error encountered during the process.
-func openExif(filename string) (*ExifMetadata, error) {
-	file, err := os.Open(filename)
+func openExif(fileName string) (*ExifMetadata, error) {
+	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
 	}
-	return getExif(file)
+	exifMetadata, err := getExif(file)
+	if err != nil {
+		return nil, err
+	}
+	return exifMetadata, nil
 }
 
 // setExif sets various Exif metadata fields using the Exif struct and logs any encountered errors.

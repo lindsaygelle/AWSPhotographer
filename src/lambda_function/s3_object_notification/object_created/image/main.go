@@ -13,7 +13,7 @@ import (
 
 // Constants for defining the file directory where temporary files are stored.
 const (
-	fileDirectory = "/tmp/"
+	fileDirectory = "/tmp"
 )
 
 // Global variables to store S3 bucket folder names.
@@ -33,13 +33,35 @@ func createAWSSession() *session.Session {
 }
 
 // getEnvironmentVariable retrieves an environment variable by its key and returns its value.
-// It exits the program with an error if the variable is not set.
+// It exits the program with an error if the variable is not set or empty.
 func getEnvironmentVariable(key string) string {
 	environmentValue := os.Getenv(key)
 	if len(environmentValue) == 0 {
 		log.Fatalf("%s is not set", key)
 	}
 	return environmentValue
+}
+
+// validateS3Folders checks that S3 bucket folder names are unique and not empty.
+func validateS3Folders() {
+	folders := []string{
+		s3BucketFolderImagesCompressed,
+		s3BucketFolderImagesExif,
+		s3BucketFolderImagesUploaded,
+	}
+
+	// Create a map to store folder names and check for duplicates.
+	folderMap := make(map[string]bool)
+
+	for _, folder := range folders {
+		if folder == "" {
+			log.Fatal("S3 bucket folder names cannot be empty.")
+		}
+		if folderMap[folder] {
+			log.Fatalf("Duplicate S3 bucket folder name found: %s", folder)
+		}
+		folderMap[folder] = true
+	}
 }
 
 // handler is the AWS Lambda function that processes S3 events.
@@ -65,6 +87,9 @@ func main() {
 	s3BucketFolderImagesCompressed = getEnvironmentVariable("S3_BUCKET_FOLDER_IMAGES_COMPRESSED")
 	s3BucketFolderImagesExif = getEnvironmentVariable("S3_BUCKET_FOLDER_IMAGES_EXIF")
 	s3BucketFolderImagesUploaded = getEnvironmentVariable("S3_BUCKET_FOLDER_IMAGES_UPLOADED")
+
+	// Validate S3 folder names.
+	validateS3Folders()
 
 	// Start the AWS Lambda handler function.
 	lambda.Start(handler)

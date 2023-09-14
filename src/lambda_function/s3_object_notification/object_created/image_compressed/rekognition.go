@@ -18,6 +18,7 @@ func processRekognition(session *session.Session, s3BucketName string, s3ObjectK
 	s3Client := s3.New(session)
 	processRekognitionDetectFaces(rekognitionClient, s3Client, s3BucketName, s3ObjectKey)
 	processRekognitionDetectLabels(rekognitionClient, s3Client, s3BucketName, s3ObjectKey)
+	processRekognitionDetectText(rekognitionClient, s3Client, s3BucketName, s3ObjectKey)
 }
 
 // processRekognitionDetectFaces processes an S3 object image with AWS Rekognition Detect Faces.
@@ -75,7 +76,7 @@ func processRekognitionDetectFacesOutput(s3Client *s3.S3, rekognitionDetectFaces
 	// Todo: Implement process S3PutObjectInput
 	s3PutObjectOutput, err := putS3Object(s3Client, s3PutObjectInput)
 	if err != nil {
-		log.Fatalf("s3PutObjectOutput: Error=%s", err)
+		log.Fatalf("S3PutObjectOutput: Error=%s", err)
 	}
 	processS3PutObjectOutput(s3PutObjectOutput)
 }
@@ -136,7 +137,65 @@ func processRekognitionDetectLabelsOutput(s3Client *s3.S3, rekognitionDetectLabe
 	// Perform S3 PutObject operation to store the processed data.
 	s3PutObjectOutput, err := putS3Object(s3Client, s3PutObjectInput)
 	if err != nil {
-		log.Fatalf("s3PutObjectOutput: Error=%s", err)
+		log.Fatalf("S3PutObjectOutput: Error=%s", err)
+	}
+	processS3PutObjectOutput(s3PutObjectOutput)
+}
+
+// processRekognitionDetectText processes an S3 object image with AWS Rekognition Detect Faces.
+func processRekognitionDetectText(rekognitionClient *rekognition.Rekognition, s3Client *s3.S3, s3BucketName string, s3ObjectKey string) {
+	// Create a Rekognition S3Object representation.
+	rekognitionS3Object := rekognition.S3Object{
+		Bucket: &s3BucketName,
+		Name:   &s3ObjectKey}
+	processRekognitionS3Object(&rekognitionS3Object)
+
+	// Create a Rekognition Image representation.
+	rekognitionImage := rekognition.Image{
+		S3Object: &rekognitionS3Object,
+	}
+	processRekognitionImage(&rekognitionImage)
+
+	// Create a Rekognition DetectTextInput and process it.
+	rekognitionDetectTextInput := rekognition.DetectTextInput{
+		Image: &rekognitionImage,
+	}
+	processRekognitionDetectTextInput(&rekognitionDetectTextInput)
+
+	// Perform face detection using Rekognition.
+	rekognitionDetectTextOutput, err := rekognitionClient.DetectText(&rekognitionDetectTextInput)
+	if err != nil {
+		log.Fatalf("RekognitionDetectTextOutput: Error=%s", err)
+	}
+
+	// Process the output and store it in S3.
+	processRekognitionDetectTextOutput(s3Client, rekognitionDetectTextOutput, s3BucketName, s3ObjectKey)
+}
+
+// processRekognitionDetectTextInput processes a rekognition.DetectTextInput.
+func processRekognitionDetectTextInput(rekognitionDetectTextInput *rekognition.DetectTextInput) {
+	log.Printf("RekognitionDetectTextInput: Filters=%v",
+		rekognitionDetectTextInput.Filters)
+}
+
+// processRekognitionDetectTextOutput processes a rekognition.DetectTextOutput.
+func processRekognitionDetectTextOutput(s3Client *s3.S3, rekognitionDetectTextOutput *rekognition.DetectTextOutput, s3BucketName string, s3ObjectKey string) {
+	log.Printf("RekognitionDetectTextOutput: TextModelVersion =%v",
+		rekognitionDetectTextOutput.TextModelVersion)
+
+	// Modify the S3 object key for storage.
+	s3ObjectKey = fmt.Sprintf("%s/%s.JSON", s3BucketFolderRekognitionDetectText, strings.Split(path.Base(s3ObjectKey), ".")[0])
+
+	// Prepare S3 PutObjectInput and perform the S3 object update.
+	s3PutObjectInput, err := getS3PutObjectInput(s3BucketName, s3ObjectKey, rekognitionDetectTextOutput)
+	if err != nil {
+		log.Fatalf("S3PutObjectInput: Error=%s", err)
+	}
+
+	// Todo: Implement process S3PutObjectInput
+	s3PutObjectOutput, err := putS3Object(s3Client, s3PutObjectInput)
+	if err != nil {
+		log.Fatalf("S3PutObjectOutput: Error=%s", err)
 	}
 	processS3PutObjectOutput(s3PutObjectOutput)
 }

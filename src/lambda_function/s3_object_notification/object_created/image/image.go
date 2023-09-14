@@ -10,8 +10,8 @@ import (
 
 // openImage opens an image file specified by the filename and returns the decoded image and any error encountered.
 // It first opens the file, then uses getImage to decode and return the image. The file is closed automatically when done.
-func openImage(filename string) (image.Image, error) {
-	file, err := os.Open(filename)
+func openImage(fileName string) (image.Image, error) {
+	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func getImage(file io.Reader) (image.Image, error) {
 // It scales the image to half of its original dimensions by default.
 func scaleImage(imageSource image.Image, scale draw.Scaler) image.Image {
 	imageSourceRectangle := imageSource.Bounds()
-	imageDestinationRectangle := image.Rect(0, 0, imageSourceRectangle.Max.X/2, imageSourceRectangle.Max.Y/2)
+	imageDestinationRectangle := image.Rect(0, 0, imageSourceRectangle.Max.X, imageSourceRectangle.Max.Y)
 	imageDestination := image.NewRGBA(imageDestinationRectangle)
 	scale.Scale(imageDestination, imageDestinationRectangle, imageSource, imageSourceRectangle, draw.Over, nil)
 	return imageDestination
