@@ -15,14 +15,14 @@ resource "aws_lambda_function" "s3_object_notification_object_created_image" {
   filename         = "./src/lambda_function/s3_object_notification/object_created/image/lambda.zip"
   function_name    = "${var.application}S3ObjectNotificationObjectCreatedImageUploaded"
   layers           = null
-  memory_size      = 128
+  memory_size      = 256 // Might be running out of memory when not rescaling image/2
   package_type     = "Zip"
   publish          = false
   runtime          = "provided.al2"
   skip_destroy     = false
   source_code_hash = sha256("./src/lambda_function/s3_object_notification/object_created/image/lambda.zip")
   role             = aws_iam_role.lambda_s3_bucket_notification.arn
-  timeout          = 60
+  timeout          = 120
   tracing_config {
     mode = "Active"
   }
