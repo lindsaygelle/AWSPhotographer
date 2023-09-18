@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/rwcarlsen/goexif/exif"
-	"github.com/rwcarlsen/goexif/tiff"
 )
 
 // Exif is the interface for an Exif entity. It defines methods for retrieving Exif tags.
