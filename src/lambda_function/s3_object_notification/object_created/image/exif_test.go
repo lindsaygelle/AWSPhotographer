@@ -539,3 +539,11 @@ func TestGetExifYResolution(t *testing.T) {
 		t.Logf("GetExifYResolution: %s", err)
 	}
 }
+
+func TestOpenExif(t *testing.T) {
+	/*exifMetadata, err := openExif("DSC00745.JPG")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(exifMetadata.DateTime)*/
+}
