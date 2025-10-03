@@ -19,7 +19,7 @@ jobs:
           - ./src/lambda_function/s3_object_notification/object_created/image
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: 1.21.0
       - run: |
